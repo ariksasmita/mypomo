@@ -1,27 +1,23 @@
 <template>
   <div>
-    {{minString}}:{{secString}}
+    <div>{{timeString}}</div>
+    <button @click="buttonHandler">{{buttonText}}</button>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted, onUnmounted, computed } from 'vue'
+  import { ref, onUnmounted, computed } from 'vue'
 
   const minutes = ref(0)
-  const seconds = ref(10)
+  const seconds = ref(5)
+  const buttonText = ref('Start')
   let interv: any
 
-  const minString = computed(() => {
-    return minutes.value < 10 ? `0${minutes.value.toString()}` : minutes.value.toString()
+  const timeString = computed(() => {
+    const min = minutes.value < 10 ? `0${minutes.value.toString()}` : minutes.value.toString()
+    const sec = seconds.value < 10 ? `0${seconds.value.toString()}` : seconds.value.toString()
+    return `${min}:${sec}`
   })
-  const secString = computed(() => {
-    return seconds.value < 10 ? `0${seconds.value.toString()}` : seconds.value.toString()
-  })
-
-  const onFinish = () => {
-    alert('times up')
-    clearInterval(interv)
-  }
 
   const updateTime = () => {
     // seconds
@@ -29,8 +25,6 @@
       seconds.value = seconds.value - 1
     } else if (seconds.value === 0 && minutes.value > 0) {
       seconds.value = 59
-    } else {
-      onFinish()
     }
 
     // minutes
@@ -39,13 +33,27 @@
     }
   }
 
-  onMounted(() => {
+  const buttonHandler = () => {
+    !interv ? startTimer() : stopTimer()
+  }
+
+  const startTimer = () => {
+    if (interv) return
+    buttonText.value = 'Stop'
     interv = setInterval(() => {
       updateTime()
     }, 1000);
-  })
+  }
+
+  const stopTimer = () => {
+    if (!interv) return
+    clearInterval(interv)
+    minutes.value = 0
+    seconds.value = 0
+    buttonText.value = 'Start'
+  }
 
   onUnmounted(() => {
-    interv && clearInterval(interv)
+    stopTimer()
   })
 </script>
