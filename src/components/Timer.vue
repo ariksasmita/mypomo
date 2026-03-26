@@ -1,10 +1,10 @@
 <template>
-  <div>
-    <div>{{timeString}}</div>
-    <button @click="buttonHandler">{{buttonText}}</button>
-    <div>
-      <input type="number" min="0" max="60" v-model="minInput" placeholder="min">
-      <input type="number" min="0" max="60" v-model="secInput" placeholder="sec">
+  <div class="p-4 bg-gray-100 rounded-lg">
+    <div class="text-4xl font-bold text-blue-600 mb-4">{{timeString}}</div>
+    <button @click="buttonHandler" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">{{buttonText}}</button>
+    <div class="mt-4 flex gap-2">
+      <input type="number" min="0" max="60" v-model="minInput" placeholder="min" class="border p-1 w-20">
+      <input type="number" min="0" max="60" v-model="secInput" placeholder="sec" class="border p-1 w-20">
     </div>
   </div>
 </template>
