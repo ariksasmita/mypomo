@@ -3,8 +3,8 @@
     <div>{{timeString}}</div>
     <button @click="buttonHandler">{{buttonText}}</button>
     <div>
-      <input type="number" v-model="minInput" placeholder="min">
-      <input type="number" v-model="secInput" placeholder="sec">
+      <input type="number" min="0" max="60" v-model="minInput" placeholder="min">
+      <input type="number" min="0" max="60" v-model="secInput" placeholder="sec">
     </div>
   </div>
 </template>
@@ -12,7 +12,7 @@
 <script setup lang="ts">
   import { ref, onUnmounted, computed } from 'vue'
 
-  const minutes = ref(2)
+  const minutes = ref(0)
   const seconds = ref(0)
   const minInput = ref(0)
   const secInput = ref(0)
@@ -26,18 +26,18 @@
   })
 
   const updateTime = () => {
-    // seconds
-    if (seconds.value > 0) {
-      seconds.value = seconds.value - 1
-    } else if (seconds.value === 0 && minutes.value > 0) {
-      seconds.value = 59
-    } else {
-      resetTimer()
-    }
-
     // minutes
     if (minutes.value > 0 && seconds.value === 0) {
       minutes.value = minutes.value - 1
+      seconds.value = 59
+      return
+    }
+
+    // seconds
+    if (seconds.value > 0) {
+      seconds.value = seconds.value - 1
+    } else {
+      stopTimer()
     }
   }
 
@@ -65,6 +65,7 @@
     minutes.value = 0
     seconds.value = 0
     buttonText.value = 'Start'
+    interv = null
   }
 
   onUnmounted(() => {
