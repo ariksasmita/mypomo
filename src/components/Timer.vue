@@ -42,6 +42,9 @@
             <div v-else key="running" class="text-center">
               <div v-if="taskTitle" class="mb-6">
                 <h2 class="text-2xl font-semibold text-white mb-3">{{taskTitle}}</h2>
+                <div v-if="taskCategory" class="inline-block px-3 py-1 bg-violet-500/20 border border-violet-500/30 rounded-full text-violet-200 text-sm font-medium mb-3">
+                  {{taskCategory}}
+                </div>
                 <p v-if="taskDescription" class="text-white/70 text-lg leading-relaxed">{{taskDescription}}</p>
               </div>
               <button @click="buttonHandler" class="px-8 py-3 bg-gradient-to-r from-violet-500 to-purple-600 text-white font-medium rounded-full hover:from-violet-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-violet-500/25 transform hover:scale-105 active:scale-95">
@@ -67,6 +70,26 @@
             <div>
               <label class="block text-white/70 text-xs font-medium uppercase tracking-wide mb-2">Task Title</label>
               <input v-model="taskTitle" type="text" placeholder="What are you working on?" class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all duration-200 hover:bg-white/15">
+            </div>
+            <div>
+              <label class="block text-white/70 text-xs font-medium uppercase tracking-wide mb-2">Category</label>
+              <div class="relative">
+                <input 
+                  v-model="taskCategory" 
+                  type="text" 
+                  list="category-options"
+                  placeholder="Select or type category"
+                  class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all duration-200 hover:bg-white/15"
+                >
+                <datalist id="category-options">
+                  <option value="Project">Project</option>
+                  <option value="Chore">Chore</option>
+                  <option value="Others">Others</option>
+                </datalist>
+                <svg class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </div>
             </div>
             <div>
               <label class="block text-white/70 text-xs font-medium uppercase tracking-wide mb-2">Description</label>
@@ -102,6 +125,7 @@
   const showCustom = ref(false)
   const taskTitle = ref('')
   const taskDescription = ref('')
+  const taskCategory = ref('')
   const isRunning = ref(false)
   const buttonText = ref('Start')
   let interv: any
