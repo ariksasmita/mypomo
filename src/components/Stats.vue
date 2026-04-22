@@ -10,69 +10,71 @@
         </button>
         <button @click="refreshStats" class="p-2 text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] hover:surface-container-high rounded-full transition-all duration-200" title="Refresh">
           <svg class="w-5 h-5" :class="{ 'animate-spin': isRefreshing }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357 2m15.357 2H15"></path>
           </svg>
         </button>
         <button @click="exportData" class="p-2 text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] hover:surface-container-high rounded-full transition-all duration-200" title="Export JSON">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003 3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
           </svg>
         </button>
       </div>
     </div>
 
-    <div v-show="isExpanded" class="flex-1 overflow-y-auto space-y-6">
-      <section v-if="categoryStats.length > 0">
-        <h3 class="text-xs font-semibold uppercase tracking-wider mb-3 text-[var(--color-on-surface-variant)]">Category Stats</h3>
-        <div class="space-y-3">
-          <div v-for="stats in categoryStats" :key="stats.category" class="surface-container-low rounded-[var(--radius-lg)] p-4 hover:surface-container-lowest transition-all duration-200">
-            <div class="flex items-center justify-between mb-2">
-              <span class="font-medium text-[var(--color-on-surface)]">{{ stats.category }}</span>
-              <span class="text-sm text-[var(--color-on-surface-variant)]">{{ formatTime(stats.totalTime) }}</span>
-            </div>
-            <div class="flex gap-4 text-xs">
-              <span class="text-[var(--color-on-surface-variant)]">
-                {{ stats.focusSessions }} focus
-              </span>
-              <span class="text-[var(--color-on-surface-variant)]">
-                {{ stats.restSessions }} rest
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section v-if="sessions.length > 0">
-        <h3 class="text-xs font-semibold uppercase tracking-wider mb-3 text-[var(--color-on-surface-variant)]">Recent Sessions</h3>
-        <div class="space-y-3">
-          <div v-for="session in sessions" :key="session.id" class="surface-container-low rounded-[var(--radius-lg)] p-4 hover:surface-container-lowest transition-all duration-200">
-            <div class="flex items-start justify-between mb-2">
-              <div class="flex-1 min-w-0">
-                <h4 class="font-medium text-[var(--color-on-surface)] truncate">{{ session.title || 'Untitled' }}</h4>
-                <p class="text-xs text-[var(--color-on-surface-variant)] truncate mt-1">{{ session.category }}</p>
+    <transition name="stats-expand">
+      <div v-show="isExpanded" class="flex-1 overflow-y-auto space-y-6">
+        <section v-if="categoryStats.length > 0">
+          <h3 class="text-xs font-semibold uppercase tracking-wider mb-3 text-[var(--color-on-surface-variant)]">Category Stats</h3>
+          <div class="space-y-3">
+            <div v-for="stats in categoryStats" :key="stats.category" class="surface-container-low rounded-[var(--radius-lg)] p-4 hover:surface-container-lowest transition-all duration-200">
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-medium text-[var(--color-on-surface)]">{{ stats.category }}</span>
+                <span class="text-sm text-[var(--color-on-surface-variant)]">{{ formatTime(stats.totalTime) }}</span>
               </div>
-              <span class="ml-2 px-2 py-0.5 text-xs font-medium rounded-full shrink-0 surface-container-high" :class="session.mode === 'focus' ? 'text-[var(--color-on-surface)]' : 'text-[var(--color-on-surface)]'">
-                {{ session.mode }}
-              </span>
-            </div>
-            <div class="flex items-center justify-between text-xs text-[var(--color-on-surface-variant)]">
-              <span>{{ formatTime(session.duration) }}</span>
-              <span>{{ formatRelativeTime(session.startTime) }}</span>
+              <div class="flex gap-4 text-xs">
+                <span class="text-[var(--color-on-surface-variant)]">
+                  {{ stats.focusSessions }} focus
+                </span>
+                <span class="text-[var(--color-on-surface-variant)]">
+                  {{ stats.restSessions }} rest
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-        <button v-if="hasMoreSessions" @click="loadMore" class="mt-4 w-full py-2 text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] hover:surface-container-low rounded-[var(--radius-lg)] transition-all duration-200 text-sm font-medium">
-          Load More
-        </button>
-      </section>
+        </section>
 
-      <section v-if="categoryStats.length === 0 && sessions.length === 0" class="text-center py-12">
-        <svg class="w-16 h-16 text-[var(--color-on-surface-variant)] mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-        <p class="text-sm text-[var(--color-on-surface-variant)]">No sessions yet...</p>
-      </section>
-    </div>
+        <section v-if="sessions.length > 0">
+          <h3 class="text-xs font-semibold uppercase tracking-wider mb-3 text-[var(--color-on-surface-variant)]">Recent Sessions</h3>
+          <div class="space-y-3">
+            <div v-for="session in sessions" :key="session.id" class="surface-container-low rounded-[var(--radius-lg)] p-4 hover:surface-container-lowest transition-all duration-200">
+              <div class="flex items-start justify-between mb-2">
+                <div class="flex-1 min-w-0">
+                  <h4 class="font-medium text-[var(--color-on-surface)] truncate">{{ session.title || 'Untitled' }}</h4>
+                  <p class="text-xs text-[var(--color-on-surface-variant)] truncate mt-1">{{ session.category }}</p>
+                </div>
+                <span class="ml-2 px-2 py-0.5 text-xs font-medium rounded-full shrink-0 surface-container-high" :class="session.mode === 'focus' ? 'text-[var(--color-on-surface)]' : 'text-[var(--color-on-surface)]'">
+                  {{ session.mode }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between text-xs text-[var(--color-on-surface-variant)]">
+                <span>{{ formatTime(session.duration) }}</span>
+                <span>{{ formatRelativeTime(session.startTime) }}</span>
+              </div>
+            </div>
+            <button v-if="hasMoreSessions" @click="loadMore" class="mt-4 w-full py-2 text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] hover:surface-container-low rounded-[var(--radius-lg)] transition-all duration-200 text-sm font-medium">
+              Load More
+            </button>
+          </div>
+        </section>
+
+        <section v-if="categoryStats.length === 0 && sessions.length === 0" class="text-center py-12">
+          <svg class="w-16 h-16 text-[var(--color-on-surface-variant)] mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <p class="text-sm text-[var(--color-on-surface-variant)]">No sessions yet...</p>
+        </section>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -89,7 +91,7 @@ const sessionsPerPage = 3
 const isRefreshing = ref(false)
 const isExpanded = ref(true)
 
-const hasMoreSessions = computed(() => 
+const hasMoreSessions = computed(() =>
   currentPage.value * sessionsPerPage < totalSessions.value
 )
 
@@ -169,3 +171,22 @@ defineExpose({
   toggleExpanded
 })
 </script>
+
+<style scoped>
+.stats-expand-enter-active,
+.stats-expand-leave-active {
+  transition: all 0.4s ease-in-out;
+}
+
+.stats-expand-enter-from {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+}
+
+.stats-expand-leave-to {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+}
+</style>
