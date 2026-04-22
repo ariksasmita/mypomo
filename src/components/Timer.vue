@@ -1,75 +1,79 @@
 <template>
   <div class="flex-1">
-    <div class="backdrop-blur-xl bg-white/10 rounded-3xl p-8 shadow-2xl border border-white/20">
+    <div class="glass-surface rounded-lg p-8 relative">
       <div class="text-center">
-        <div class="mb-4">
-          <span class="text-white/60 text-sm font-medium tracking-widest uppercase">Pomodoro Timer</span>
+        <div class="mb-6">
+          <span class="text-sm font-medium tracking-widest uppercase text-[var(--color-on-surface-variant)]">Pomodoro Timer</span>
         </div>
         <div class="flex justify-center gap-3 mb-8">
-          <button 
-            @click="mode = 'focus'" 
-            :class="mode === 'focus' ? 'bg-violet-500 text-white' : 'bg-white/10 text-white/60 hover:text-white'"
-            class="px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 border border-transparent hover:border-white/20"
+          <button
+            @click="mode = 'focus'"
+            :class="mode === 'focus' ? 'surface-container-highest text-[var(--color-on-surface)]' : 'surface-container-low text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)]'"
+            class="px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ghost-border-subtle hover:ghost-border"
           >
             FOCUS
           </button>
-          <button 
-            @click="mode = 'rest'" 
-            :class="mode === 'rest' ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white/60 hover:text-white'"
-            class="px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 border border-transparent hover:border-white/20"
+          <button
+            @click="mode = 'rest'"
+            :class="mode === 'rest' ? 'surface-container-highest text-[var(--color-on-surface)]' : 'surface-container-low text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)]'"
+            class="px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ghost-border-subtle hover:ghost-border"
           >
             REST
           </button>
         </div>
-        <div class="text-8xl font-light text-white mb-8 font-mono tracking-wider">{{timeString}}</div>
-        
+        <div class="text-display text-[3.5rem] font-semibold text-[var(--color-tertiary)] mb-8 tracking-tight">{{timeString}}</div>
+
         <transition name="content-fade" mode="out-in">
           <div v-if="!isRunning" key="setup" class="text-center">
-            <button 
-              @click="buttonHandler" 
-              :class="mode === 'focus' ? 'from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 hover:shadow-violet-500/25' : 'from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 hover:shadow-emerald-500/25'"
-              class="px-8 py-3 bg-gradient-to-r text-white font-medium rounded-full transition-all duration-300 shadow-lg transform hover:scale-105 active:scale-95 mb-6"
+            <button
+              @click="buttonHandler"
+              :style="mode === 'focus'
+                ? 'background: linear-gradient(145deg, var(--color-primary) 0%, var(--color-primary-dim) 100%)'
+                : 'background: linear-gradient(145deg, var(--color-primary-dim) 0%, var(--color-primary) 100%)'"
+              class="px-8 py-3 text-[var(--color-on-primary)] font-medium rounded-[var(--radius-md)] transition-all duration-300 transform hover:scale-105 active:scale-95 mb-6 hover:shadow-lg"
             >
               {{buttonText}}
             </button>
             <div class="flex justify-center gap-3 mb-8">
-              <button @click="setPreset(5)" class="px-5 py-2 bg-white/10 border border-white/20 text-white/80 text-sm font-medium rounded-full hover:bg-white/20 hover:text-white hover:border-white/30 transition-all duration-200">
+              <button @click="setPreset(5)" class="px-5 py-2 surface-container-high text-[var(--color-on-surface-variant)] text-sm font-medium rounded-[var(--radius-md)] hover:text-[var(--color-on-surface)] ghost-border-subtle hover:ghost-border transition-all duration-200">
                 5m
               </button>
-              <button @click="setPreset(10)" class="px-5 py-2 bg-white/10 border border-white/20 text-white/80 text-sm font-medium rounded-full hover:bg-white/20 hover:text-white hover:border-white/30 transition-all duration-200">
+              <button @click="setPreset(10)" class="px-5 py-2 surface-container-high text-[var(--color-on-surface-variant)] text-sm font-medium rounded-[var(--radius-md)] hover:text-[var(--color-on-surface)] ghost-border-subtle hover:ghost-border transition-all duration-200">
                 10m
               </button>
-              <button @click="setPreset(25)" class="px-5 py-2 bg-white/10 border border-white/20 text-white/80 text-sm font-medium rounded-full hover:bg-white/20 hover:text-white hover:border-white/30 transition-all duration-200">
+              <button @click="setPreset(25)" class="px-5 py-2 surface-container-high text-[var(--color-on-surface-variant)] text-sm font-medium rounded-[var(--radius-md)] hover:text-[var(--color-on-surface)] ghost-border-subtle hover:ghost-border transition-all duration-200">
                 25m
               </button>
-              <button @click="toggleCustom" :class="showCustom ? 'bg-white/30 text-white border-white/40' : 'bg-white/10 border-white/20 text-white/80'" class="px-5 py-2 border text-white/80 text-sm font-medium rounded-full hover:bg-white/20 hover:text-white hover:border-white/30 transition-all duration-200">
+              <button @click="toggleCustom" :class="showCustom ? 'surface-container-highest text-[var(--color-on-surface)]' : 'surface-container-high text-[var(--color-on-surface-variant)]'" class="px-5 py-2 text-[var(--color-on-surface-variant)] text-sm font-medium rounded-[var(--radius-md)] hover:text-[var(--color-on-surface)] ghost-border-subtle hover:ghost-border transition-all duration-200">
                 Custom
               </button>
             </div>
             <div v-show="showCustom" class="mt-8 flex items-center justify-center gap-4">
               <div class="relative">
-                <input type="number" min="0" max="60" v-model="minInput" placeholder="00" class="w-24 bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-center text-xl text-white font-mono focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all duration-200 placeholder-white/30 hover:bg-white/15">
-                <span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-white/50 text-xs font-medium uppercase tracking-wide">min</span>
+                <input type="number" min="0" max="60" v-model="minInput" placeholder="00" class="w-24 surface-container-lowest rounded-[var(--radius-sm)] px-4 py-3 text-center text-xl text-[var(--color-on-surface)] text-mono focus:outline-none transition-all duration-200 placeholder:text-[var(--color-on-surface-variant)] hover:surface-container-low">
+                <span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium uppercase tracking-wide text-[var(--color-on-surface-variant)]">min</span>
               </div>
-              <span class="text-white/40 text-2xl font-light">:</span>
+              <span class="text-[var(--color-on-surface-variant)] text-2xl font-light">:</span>
               <div class="relative">
-                <input type="number" min="0" max="60" v-model="secInput" placeholder="00" class="w-24 bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-center text-xl text-white font-mono focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all duration-200 placeholder-white/30 hover:bg-white/15">
-                <span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-white/50 text-xs font-medium uppercase tracking-wide">sec</span>
+                <input type="number" min="0" max="60" v-model="secInput" placeholder="00" class="w-24 surface-container-lowest rounded-[var(--radius-sm)] px-4 py-3 text-center text-xl text-[var(--color-on-surface)] text-mono focus:outline-none transition-all duration-200 placeholder:text-[var(--color-on-surface-variant)] hover:surface-container-low">
+                <span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium uppercase tracking-wide text-[var(--color-on-surface-variant)]">sec</span>
               </div>
             </div>
           </div>
           <div v-else key="running" class="text-center">
             <div v-if="taskTitle" class="mb-6">
-              <h2 class="text-2xl font-semibold text-white mb-3">{{taskTitle}}</h2>
-              <div v-if="taskCategory" class="inline-block px-3 py-1 mb-3 rounded-full text-sm font-medium" :class="mode === 'focus' ? 'bg-violet-500/20 text-violet-200 border border-violet-500/30' : 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/30'">
+              <h2 class="text-display text-2xl font-semibold text-[var(--color-tertiary)] mb-3">{{taskTitle}}</h2>
+              <div v-if="taskCategory" class="inline-block px-3 py-1 mb-3 rounded-full text-sm font-medium surface-container-high" :class="mode === 'focus' ? 'text-[var(--color-on-surface)]' : 'text-[var(--color-on-surface)]'">
                 {{taskCategory}}
               </div>
-              <p v-if="taskDescription" class="text-white/70 text-lg leading-relaxed">{{taskDescription}}</p>
+              <p v-if="taskDescription" class="text-body text-[var(--color-on-surface-variant)] text-lg leading-relaxed">{{taskDescription}}</p>
             </div>
-            <button 
-              @click="buttonHandler" 
-              :class="mode === 'focus' ? 'from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 hover:shadow-violet-500/25' : 'from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 hover:shadow-emerald-500/25'"
-              class="px-8 py-3 bg-gradient-to-r text-white font-medium rounded-full transition-all duration-300 shadow-lg transform hover:scale-105 active:scale-95"
+            <button
+              @click="buttonHandler"
+              :style="mode === 'focus'
+                ? 'background: linear-gradient(145deg, var(--color-primary) 0%, var(--color-primary-dim) 100%)'
+                : 'background: linear-gradient(145deg, var(--color-primary-dim) 0%, var(--color-primary) 100%)'"
+              class="px-8 py-3 text-[var(--color-on-primary)] font-medium rounded-[var(--radius-md)] transition-all duration-300 transform hover:scale-105 active:scale-95 hover:shadow-lg"
             >
               {{buttonText}}
             </button>
