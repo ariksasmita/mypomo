@@ -10,8 +10,8 @@ const statsRef = ref()
 
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900 flex items-center justify-center p-8">
-    <div class="flex gap-6 w-full max-w-6xl items-stretch">
-      <div class="flex gap-6 flex-1 items-stretch">
+    <div class="flex flex-col gap-6 w-full max-w-6xl items-stretch">
+      <div class="flex gap-6 w-full">
         <Timer ref="timerRef" @session-saved="statsRef?.refreshStats()" />
         <SessionDetails 
           v-if="timerRef"
