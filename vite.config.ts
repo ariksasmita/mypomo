@@ -52,4 +52,10 @@ export default defineConfig({
       }
     })
   ],
+  server: {
+    allowedHosts: ['.trycloudflare.com', 'made-stations-referrals-pipes.trycloudflare.com'],
+    hmr: {
+      overlay: true
+    }
+  }
 })
