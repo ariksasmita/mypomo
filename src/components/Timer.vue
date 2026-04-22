@@ -8,20 +8,20 @@
         <div class="flex justify-center gap-3 mb-8">
           <button
             @click="mode = 'focus'"
-            :class="mode === 'focus' ? 'surface-container-highest text-[var(--color-on-surface)]' : 'surface-container-low text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)]'"
+            :class="mode === 'focus' ? 'bg-[#d4a373] text-[#1e293b]' : 'surface-container-high text-[var(--color-on-surface)] hover:text-[#d4a373] hover:surface-container-highest'"
             class="px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ghost-border-subtle hover:ghost-border"
           >
             FOCUS
           </button>
           <button
             @click="mode = 'rest'"
-            :class="mode === 'rest' ? 'surface-container-highest text-[var(--color-on-surface)]' : 'surface-container-low text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)]'"
+            :class="mode === 'rest' ? 'bg-[#6abf69] text-[#1e293b]' : 'surface-container-high text-[var(--color-on-surface)] hover:text-[#6abf69] hover:surface-container-highest'"
             class="px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ghost-border-subtle hover:ghost-border"
           >
             REST
           </button>
         </div>
-        <div class="text-display text-[3.5rem] font-semibold text-[var(--color-tertiary)] mb-8 tracking-tight">{{timeString}}</div>
+        <div class="text-display text-[5rem] font-semibold mb-8 tracking-tight" :class="mode === 'focus' ? 'text-[#d4a373]' : 'text-[#6abf69]'">{{timeString}}</div>
 
         <transition name="content-fade" mode="out-in">
           <div v-if="!isRunning" key="setup" class="text-center">
@@ -63,7 +63,7 @@
           <div v-else key="running" class="text-center">
             <div v-if="taskTitle" class="mb-6">
               <h2 class="text-display text-2xl font-semibold text-[var(--color-tertiary)] mb-3">{{taskTitle}}</h2>
-              <div v-if="taskCategory" class="inline-block px-3 py-1 mb-3 rounded-full text-sm font-medium surface-container-high" :class="mode === 'focus' ? 'text-[var(--color-on-surface)]' : 'text-[var(--color-on-surface)]'">
+              <div v-if="taskCategory" class="inline-block px-3 py-1 mb-3 rounded-full text-sm font-medium surface-container-high" :class="mode === 'focus' ? 'text-[#1e293b] bg-[#d4a373]/15' : 'text-[#1e293b] bg-[#6abf69]/15'">
                 {{taskCategory}}
               </div>
               <p v-if="taskDescription" class="text-body text-[var(--color-on-surface-variant)] text-lg leading-relaxed">{{taskDescription}}</p>

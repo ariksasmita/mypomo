@@ -3,6 +3,11 @@
     <div class="flex items-center justify-between mb-6">
       <span class="text-sm font-medium tracking-widest uppercase text-[var(--color-on-surface-variant)]">Statistics</span>
       <div class="flex gap-2">
+        <button @click="toggleExpanded" class="p-2 text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] hover:surface-container-high rounded-full transition-all duration-200" title="Toggle">
+          <svg class="w-5 h-5 transition-transform duration-200" :class="{ 'rotate-180': isExpanded }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
         <button @click="refreshStats" class="p-2 text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] hover:surface-container-high rounded-full transition-all duration-200" title="Refresh">
           <svg class="w-5 h-5" :class="{ 'animate-spin': isRefreshing }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
@@ -16,7 +21,7 @@
       </div>
     </div>
 
-    <div class="flex-1 overflow-y-auto space-y-6">
+    <div v-show="isExpanded" class="flex-1 overflow-y-auto space-y-6">
       <section v-if="categoryStats.length > 0">
         <h3 class="text-xs font-semibold uppercase tracking-wider mb-3 text-[var(--color-on-surface-variant)]">Category Stats</h3>
         <div class="space-y-3">
@@ -82,6 +87,7 @@ const totalSessions = ref(0)
 const currentPage = ref(1)
 const sessionsPerPage = 3
 const isRefreshing = ref(false)
+const isExpanded = ref(true)
 
 const hasMoreSessions = computed(() => 
   currentPage.value * sessionsPerPage < totalSessions.value
@@ -134,6 +140,10 @@ const loadMore = async () => {
   sessions.value = newSessions
 }
 
+const toggleExpanded = () => {
+  isExpanded.value = !isExpanded.value
+}
+
 const exportData = async () => {
   try {
     const blob = await PomodoroDB.exportToJSON()
@@ -155,6 +165,7 @@ onMounted(() => {
 })
 
 defineExpose({
-  refreshStats
+  refreshStats,
+  toggleExpanded
 })
 </script>
