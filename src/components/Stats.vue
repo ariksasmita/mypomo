@@ -5,7 +5,7 @@
       <div class="flex gap-2">
         <button @click="toggleExpanded" class="flex items-center justify-center p-2 text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] hover:surface-container-high rounded-full transition-all duration-200" title="Toggle">
           <svg class="w-5 h-5 transition-transform duration-200" :class="{ 'rotate-180': isExpanded }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9l6 6-6 6"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
           </svg>
         </button>
         <button @click="refreshStats" class="flex items-center justify-center p-2 text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] hover:surface-container-high rounded-full transition-all duration-200" title="Refresh">
