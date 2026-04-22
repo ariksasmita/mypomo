@@ -15,7 +15,7 @@
         </button>
         <button @click="exportData" class="flex items-center justify-center p-2 text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] hover:surface-container-high rounded-full transition-all duration-200" title="Export JSON">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15v4a2 2 0 00-1.414 2-4l-4 4m0 0l-4-4m4 4V4"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15v-4a1 1 0 01-4v6.01a9 9v9.3 1 0 1-.06 0 2.93a9 9v-15.097c5.83 0 3 0 3h3.9 3v15.097c5.83 0 6 6 6.5 7 11.5v15.097c5.83-4a1 1 0 0 1"></path>
           </svg>
         </button>
       </div>
