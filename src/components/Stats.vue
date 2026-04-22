@@ -1,6 +1,6 @@
 <template>
   <div class="glass-surface rounded-lg p-6 flex flex-col h-full">
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center justify-between">
       <span class="text-sm font-medium tracking-widest uppercase text-[var(--color-on-surface-variant)]">Statistics</span>
       <div class="flex gap-2">
         <button @click="toggleExpanded" class="flex items-center justify-center p-2 text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] hover:surface-container-high rounded-full transition-all duration-200" title="Toggle">
@@ -22,7 +22,7 @@
     </div>
 
     <transition name="stats-expand">
-      <div v-show="isExpanded" class="flex-1 overflow-y-auto space-y-6">
+      <div v-show="isExpanded" class="flex-1 overflow-y-auto space-y-6 mt-6">
         <section v-if="categoryStats.length > 0">
           <h3 class="text-xs font-semibold uppercase tracking-wider mb-3 text-[var(--color-on-surface-variant)]">Category Stats</h3>
           <div class="space-y-3">

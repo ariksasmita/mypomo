@@ -21,7 +21,7 @@
             REST
           </button>
         </div>
-        <div class="text-display text-[5rem] font-semibold mb-8 tracking-tight" :class="mode === 'focus' ? 'text-[#d4a373]' : 'text-[#6abf69]'">{{timeString}}</div>
+        <div class="text-display text-[7rem] font-semibold mb-8 tracking-tight" :class="mode === 'focus' ? 'text-[#d4a373]' : 'text-[#6abf69]'">{{timeString}}</div>
 
         <transition name="content-fade" mode="out-in">
           <div v-if="!isRunning" key="setup" class="text-center">
