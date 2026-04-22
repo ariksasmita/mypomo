@@ -46,8 +46,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineModel } from 'vue'
-
 const taskTitle = defineModel<string>('taskTitle')
 const taskDescription = defineModel<string>('taskDescription')
 const taskCategory = defineModel<string>('taskCategory')
