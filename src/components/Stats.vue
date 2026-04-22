@@ -1,5 +1,5 @@
 <template>
-  <div class="backdrop-blur-xl bg-white/10 rounded-3xl p-6 shadow-2xl border border-white/20 w-96 flex flex-col h-full">
+  <div class="backdrop-blur-xl bg-white/10 rounded-3xl p-6 shadow-2xl border border-white/20 w-full flex flex-col h-full">
     <div class="flex items-center justify-between mb-6">
       <span class="text-white/60 text-sm font-medium tracking-widest uppercase">Statistics</span>
       <div class="flex gap-2">
