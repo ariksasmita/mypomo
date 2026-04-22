@@ -176,9 +176,13 @@
     const endTime = Date.now()
     const duration = Math.floor((endTime - sessionStartTime.value) / 1000)
 
+    const now = new Date()
+    const dateStr = now.toLocaleDateString()
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+
     const session: Session = {
-      title: taskTitle.value,
-      category: taskCategory.value,
+      title: taskTitle.value || `Session ${dateStr} - ${timeStr}`,
+      category: taskCategory.value || 'Main',
       description: taskDescription.value,
       mode: mode.value,
       duration,
