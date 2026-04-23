@@ -1,7 +1,8 @@
-import type { Session, CategoryStats, ExportData, Category, SessionMode } from '../types'
+import type { Session, CategoryStats, ExportData, Category, SessionMode, AppConfig } from '../types'
+import { DEFAULT_CONFIG } from '../types'
 
 const DB_NAME = 'mypomo-db'
-const DB_VERSION = 1
+const DB_VERSION = 2
 
 class PomodoroDB {
   private static db: IDBDatabase | null = null
@@ -20,6 +21,7 @@ class PomodoroDB {
 
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result
+        const oldVersion = event.oldVersion
 
         if (!db.objectStoreNames.contains('sessions')) {
           const sessionStore = db.createObjectStore('sessions', { keyPath: 'id', autoIncrement: true })
@@ -35,6 +37,16 @@ class PomodoroDB {
         if (!db.objectStoreNames.contains('categories')) {
           const categoryStore = db.createObjectStore('categories', { keyPath: 'name' })
           categoryStore.createIndex('createdAt', 'createdAt', { unique: false })
+        }
+
+        if (!db.objectStoreNames.contains('config')) {
+          db.createObjectStore('config', { keyPath: 'key' })
+        }
+
+        if (oldVersion < 2) {
+          const tx = (event.target as IDBOpenDBRequest).transaction!
+          const configStore = tx.objectStore('config')
+          configStore.add({ key: 'appConfig', value: DEFAULT_CONFIG })
         }
       }
     })
@@ -325,6 +337,58 @@ class PomodoroDB {
         resolve(categories.map(c => c.name))
       }
       request.onerror = () => reject(request.error)
+    })
+  }
+
+  static async getConfig(): Promise<AppConfig> {
+    const db = await this.init()
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('config', 'readonly')
+      const store = tx.objectStore('config')
+      const request = store.get('appConfig')
+
+      request.onsuccess = () => {
+        if (request.result) {
+          resolve(request.result.value as AppConfig)
+        } else {
+          resolve(DEFAULT_CONFIG)
+        }
+      }
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  static async saveConfig(config: AppConfig): Promise<void> {
+    const db = await this.init()
+    const plain = JSON.parse(JSON.stringify(config))
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('config', 'readwrite')
+      const store = tx.objectStore('config')
+      const request = store.put({ key: 'appConfig', value: plain })
+
+      request.onsuccess = () => resolve()
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  static async resetDatabase(): Promise<void> {
+    const db = await this.init()
+    const storeNames = Array.from(db.objectStoreNames) as string[]
+
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(storeNames, 'readwrite')
+
+      for (const name of storeNames) {
+        tx.objectStore(name).clear()
+      }
+
+      tx.objectStore('config').add({ key: 'appConfig', value: JSON.parse(JSON.stringify(DEFAULT_CONFIG)) })
+
+      tx.oncomplete = () => {
+        this.db = null
+        resolve()
+      }
+      tx.onerror = () => reject(tx.error)
     })
   }
 

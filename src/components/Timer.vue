@@ -29,9 +29,13 @@
       </div>
       
       <div class="mt-12 flex gap-3">
-        <button @click="setPreset(5)" :class="activePreset === 5 ? 'bg-primary border border-primary text-on-primary' : 'surface-container-high border border-outline-variant/10 text-on-surface-variant hover:text-primary'" class="px-4 py-1.5 rounded font-headline text-[10px] uppercase tracking-widest transition-colors">5m</button>
-        <button @click="setPreset(10)" :class="activePreset === 10 ? 'bg-primary border border-primary text-on-primary' : 'surface-container-high border border-outline-variant/10 text-on-surface-variant hover:text-primary'" class="px-4 py-1.5 rounded font-headline text-[10px] uppercase tracking-widest transition-colors">10m</button>
-        <button @click="setPreset(25)" :class="activePreset === 25 ? 'bg-primary border border-primary text-on-primary' : 'surface-container-high border border-outline-variant/10 text-on-surface-variant hover:text-primary'" class="px-4 py-1.5 rounded font-headline text-[10px] uppercase tracking-widest transition-colors">25m</button>
+        <button
+          v-for="preset in presets"
+          :key="preset.minutes"
+          @click="setPreset(preset.minutes)"
+          :class="activePreset === preset.minutes ? 'bg-primary border border-primary text-on-primary' : 'surface-container-high border border-outline-variant/10 text-on-surface-variant hover:text-primary'"
+          class="px-4 py-1.5 rounded font-headline text-[10px] uppercase tracking-widest transition-colors"
+        >{{ preset.label }}</button>
         <button @click="toggleCustom" :class="showCustom ? 'bg-primary border border-primary text-on-primary' : 'surface-container-high border border-outline-variant/10 text-on-surface-variant hover:text-primary'" class="px-4 py-1.5 rounded font-headline text-[10px] uppercase tracking-widest transition-colors">Custom</button>
       </div>
       
@@ -94,9 +98,10 @@
 </style>
 
 <script setup lang="ts">
-  import { ref, onUnmounted, computed, watch } from 'vue'
+  import { ref, onUnmounted, computed, watch, onMounted } from 'vue'
   import PomodoroDB from '../utils/indexedDB'
-  import type { Session } from '../types'
+  import type { Session, PresetConfig } from '../types'
+  import { DEFAULT_CONFIG } from '../types'
   import chimeSound from '../assets/chime.m4a'
 
   const emit = defineEmits(['sessionSaved'])
@@ -116,7 +121,25 @@
   const focusSessionCount = ref(0)
   const longRestReady = ref(false)
   const streakCount = ref(parseInt(localStorage.getItem('streakCount') || '0', 10))
+  const presets = ref<PresetConfig[]>(DEFAULT_CONFIG.presets)
+  const defaultPreset = ref(DEFAULT_CONFIG.defaultPreset)
   let interv: any
+
+  onMounted(async () => {
+    await loadConfig()
+  })
+
+  const loadConfig = async () => {
+    try {
+      const config = await PomodoroDB.getConfig()
+      presets.value = config.presets
+      defaultPreset.value = config.defaultPreset
+      if (!isRunning.value) {
+        minutes.value = config.defaultPreset
+        activePreset.value = config.defaultPreset
+      }
+    } catch {}
+  }
 
   const playChime = () => {
     const audio = new Audio(chimeSound)
@@ -130,7 +153,8 @@
     taskDescription,
     taskCategory,
     isRunning,
-    streakCount
+    streakCount,
+    loadConfig
   })
 
   const timeString = computed(() => {
@@ -194,9 +218,9 @@
       interv = null
     }
     if (!longRestReady.value) {
-      minutes.value = 25
+      minutes.value = defaultPreset.value
       seconds.value = 0
-      activePreset.value = 25
+      activePreset.value = defaultPreset.value
     }
     isRunning.value = false
   }
