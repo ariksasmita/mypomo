@@ -13,13 +13,20 @@
         <div>
           <label class="block font-headline text-[10px] uppercase tracking-tighter text-on-surface-variant mb-2">Category</label>
           <div class="relative">
-            <select v-model="taskCategory" class="w-full bg-surface-container-lowest border-none rounded p-4 text-on-surface appearance-none focus:ring-1 focus:ring-primary/40 font-body text-sm">
-              <option>Main</option>
-              <option>Production</option>
-              <option>Creative Strategy</option>
-              <option>Admin / Ops</option>
-              <option>Deep Learning</option>
-            </select>
+            <input
+              v-model="taskCategory"
+              type="text"
+              list="category-options"
+              placeholder="Select or type category"
+              class="w-full bg-surface-container-lowest border-none rounded p-4 text-on-surface placeholder:text-on-surface-variant/30 focus:ring-1 focus:ring-primary/40 font-body text-sm"
+            >
+            <datalist id="category-options">
+              <option value="Main">Main</option>
+              <option value="Production">Production</option>
+              <option value="Creative Strategy">Creative Strategy</option>
+              <option value="Admin / Ops">Admin / Ops</option>
+              <option value="Deep Learning">Deep Learning</option>
+            </datalist>
             <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant text-sm">expand_more</span>
           </div>
         </div>
