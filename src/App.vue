@@ -14,10 +14,10 @@ const streakText = computed(() => {
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center p-12 bg-surface relative">
+  <div class="min-h-screen flex flex-col bg-surface relative overflow-x-hidden">
     <div class="grain-overlay"></div>
     
-    <header class="fixed top-0 z-50 w-full flex justify-between items-center px-12 h-16 bg-gradient-to-b from-surface to-transparent">
+    <header class="fixed top-0 z-50 w-full flex justify-between items-center px-4 md:px-12 h-16 bg-gradient-to-b from-surface to-transparent">
       <div class="flex items-center gap-4">
         <span class="font-display font-bold tracking-[0.2em] text-tertiary">CHRONO_CORE</span>
         <div class="px-2 py-0.5 rounded-full bg-secondary-container/30 border border-outline-variant/10">
@@ -30,36 +30,36 @@ const streakText = computed(() => {
       </div>
     </header>
 
-    <main class="flex-1 p-12 overflow-y-auto pt-20 w-full max-w-5xl">
+    <main class="flex-1 px-4 md:px-12 py-4 md:py-12 pt-20 overflow-y-auto w-full max-w-5xl mx-auto">
       <div class="tech-trace"></div>
-      <div class="space-y-12 relative z-10">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+      <div class="space-y-8 md:space-y-12 relative z-10">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 md:gap-6">
           <div class="staggered-header">
-            <h1 class="font-display text-5xl font-bold tracking-tighter text-tertiary">SESSION_CORE</h1>
-            <p class="font-body text-on-surface-variant mt-2 max-w-xs">Restrained productivity interface designed for deep cognitive focus.</p>
+            <h1 class="font-display text-3xl md:text-5xl font-bold tracking-tighter text-tertiary">SESSION_CORE</h1>
+            <p class="font-body text-on-surface-variant mt-2 max-w-xs text-sm md:text-base">Restrained productivity interface designed for deep cognitive focus.</p>
           </div>
           <div class="flex gap-2">
             <span class="px-3 py-1 rounded-full bg-secondary-container/50 border border-outline-variant/20 font-headline text-[10px] uppercase tracking-widest text-primary-dim">{{ streakText }}</span>
           </div>
         </div>
 
-        <div class="grid grid-cols-12 gap-8">
-          <Timer ref="timerRef" @session-saved="statsRef?.refreshStats()" :class="timerRef?.isRunning ? 'col-span-12' : 'col-span-12 lg:col-span-7'" />
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8">
+          <Timer ref="timerRef" @session-saved="statsRef?.refreshStats()" class="col-span-1" />
           <SessionDetails 
             v-if="timerRef && !timerRef.isRunning"
             v-model:taskTitle="timerRef.taskTitle"
             v-model:taskDescription="timerRef.taskDescription"
             v-model:taskCategory="timerRef.taskCategory"
             v-model:isRunning="timerRef.isRunning"
-            class="col-span-12 lg:col-span-5"
+            class="col-span-1"
           />
-          <Stats ref="statsRef" class="col-span-12" />
+          <Stats ref="statsRef" class="col-span-1" />
         </div>
       </div>
     </main>
 
-    <div class="fixed bottom-12 right-12 opacity-5 pointer-events-none select-none">
-      <div class="font-display font-bold text-[120px] text-primary/20 leading-none tracking-tighter">00:00</div>
+    <div class="fixed bottom-4 md:bottom-12 right-4 md:right-12 opacity-5 pointer-events-none select-none">
+      <div class="font-display font-bold text-[80px] md:text-[120px] text-primary/20 leading-none tracking-tighter">00:00</div>
     </div>
   </div>
 </template>
