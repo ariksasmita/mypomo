@@ -21,11 +21,7 @@
               class="w-full bg-surface-container-lowest border-none rounded p-4 text-on-surface placeholder:text-on-surface-variant/30 focus:ring-1 focus:ring-primary/40 font-body text-sm"
             >
             <datalist id="category-options">
-              <option value="Main">Main</option>
-              <option value="Production">Production</option>
-              <option value="Creative Strategy">Creative Strategy</option>
-              <option value="Admin / Ops">Admin / Ops</option>
-              <option value="Deep Learning">Deep Learning</option>
+              <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
             </datalist>
             <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant text-sm">expand_more</span>
           </div>
@@ -40,8 +36,29 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import PomodoroDB from '../utils/indexedDB'
+import { DEFAULT_CONFIG } from '../types'
+
 const taskTitle = defineModel<string>('taskTitle')
 const taskDescription = defineModel<string>('taskDescription')
 const taskCategory = defineModel<string>('taskCategory')
 const isRunning = defineModel<boolean>('isRunning')
+
+const categories = ref<string[]>(DEFAULT_CONFIG.categories)
+
+onMounted(async () => {
+  await loadConfig()
+})
+
+const loadConfig = async () => {
+  try {
+    const config = await PomodoroDB.getConfig()
+    categories.value = config.categories
+  } catch {}
+}
+
+defineExpose({
+  loadConfig
+})
 </script>

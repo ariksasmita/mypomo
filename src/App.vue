@@ -3,14 +3,22 @@ import { ref, computed } from 'vue'
 import Timer from './components/Timer.vue'
 import SessionDetails from './components/SessionDetails.vue'
 import Stats from './components/Stats.vue'
+import SettingsModal from './components/SettingsModal.vue'
 
 const timerRef = ref()
 const statsRef = ref()
+const sessionRef = ref()
+const showSettings = ref(false)
 
 const streakText = computed(() => {
   const count = timerRef.value?.streakCount?.value || 0
   return `Streak: ${count}`
 })
+
+const reloadConfig = async () => {
+  if (timerRef.value?.loadConfig) await timerRef.value.loadConfig()
+  if (sessionRef.value?.loadConfig) await sessionRef.value.loadConfig()
+}
 </script>
 
 <template>
@@ -25,10 +33,7 @@ const streakText = computed(() => {
         </div>
       </div>
       <div class="flex items-center gap-6">
-        <!--
-        <button class="material-symbols-outlined text-primary/60 hover:text-tertiary transition-colors">account_circle</button>
-        <button class="material-symbols-outlined text-primary/60 hover:text-tertiary transition-colors">settings</button>
-        -->
+        <button @click="showSettings = true" class="material-symbols-outlined text-primary/60 hover:text-tertiary transition-colors">settings</button>
       </div>
     </header>
 
@@ -50,6 +55,7 @@ const streakText = computed(() => {
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8">
           <Timer ref="timerRef" @session-saved="statsRef?.refreshStats()" :class="timerRef?.isRunning ? 'col-span-1 md:col-span-12' : 'col-span-1 md:col-span-7'" />
           <SessionDetails 
+            ref="sessionRef"
             v-if="timerRef && !timerRef.isRunning"
             v-model:taskTitle="timerRef.taskTitle"
             v-model:taskDescription="timerRef.taskDescription"
@@ -65,5 +71,7 @@ const streakText = computed(() => {
     <div class="fixed bottom-4 md:bottom-12 right-4 md:right-12 opacity-5 pointer-events-none select-none">
       <div class="font-display font-bold text-[80px] md:text-[120px] text-primary/20 leading-none tracking-tighter">00:00</div>
     </div>
+
+    <SettingsModal :show="showSettings" @close="showSettings = false" @config-saved="reloadConfig" />
   </div>
 </template>
