@@ -1,11 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;700&display=swap');
 @import "tailwindcss";
 
 @theme {
   --color-background: #0c0e10;
   --color-primary: #c6c6c7;
   --color-primary-dim: #b8b9b9;
+  --color-secondary: #9c9e9c;
+  --color-secondary-container: #393c3b;
   --color-tertiary: #f8faf8;
+  --color-focus: #d4a373;
+  --color-rest: #6abf69;
   --color-surface: #0c0e10;
   --color-surface-bright: #252d33;
   --color-surface-container: #161a1e;
@@ -20,8 +24,10 @@
   --color-outline-variant: #42494e;
   --color-outline: #70767c;
 
+  --font-headline: 'Space Grotesk', sans-serif;
   --font-display: 'Space Grotesk', sans-serif;
   --font-body: 'Inter', sans-serif;
+  --font-label: 'Inter', sans-serif;
   --font-mono: 'SF Mono', 'Roboto Mono', monospace;
 
   --radius-sm: 0.25rem;
@@ -38,6 +44,14 @@ body {
 
 * {
   border-color: transparent;
+}
+
+.grain-overlay {
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
 .glass-surface {
@@ -86,18 +100,14 @@ body {
 }
 
 .tech-trace {
-  border-left: 1px solid rgba(112, 118, 124, 0.1);
-  position: relative;
-}
-
-.tech-trace::before {
-  content: '';
   position: absolute;
-  left: -1px;
+  left: 50%;
   top: 0;
   bottom: 0;
   width: 1px;
+  transform: translateX(-50%);
   background: linear-gradient(to bottom, transparent, rgba(112, 118, 124, 0.1), transparent);
+  pointer-events: none;
 }
 
 .stats-expand-enter-active,

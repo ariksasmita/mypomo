@@ -15,8 +15,8 @@ export default defineConfig({
         name: 'MyPomo',
         short_name: 'MyPomo',
         description: 'A beautiful Pomodoro timer with statistics',
-        theme_color: '#4f46e5',
-        background_color: '#1e293b',
+        theme_color: '#0c0e10',
+        background_color: '#0c0e10',
         display: 'standalone',
         icons: [
           {
@@ -32,7 +32,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,m4a}'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

@@ -1,128 +1,136 @@
 <template>
-  <div class="flex-1">
-    <div class="glass-surface rounded-lg p-8 relative">
-      <div class="text-center">
-        <div class="mb-6">
-          <span class="text-sm font-medium tracking-widest uppercase text-[var(--color-on-surface-variant)]">Pomodoro Timer</span>
+  <div class="bg-surface-container-low rounded-lg p-12 flex flex-col items-center justify-center relative overflow-hidden backdrop-blur-xl group shadow-sm border border-outline-variant/5">
+    <div class="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none" style="background-image: radial-gradient(var(--color-primary) 1px, transparent 1px); background-size: 24px 24px;"></div>
+    <div class="z-10 flex flex-col items-center w-full mb-8">
+      <div class="text-[10px] font-headline uppercase tracking-[0.3em] text-on-surface-variant mb-4">POMODORO_TIMER</div>
+      
+      <div v-if="isRunning && (taskTitle || taskCategory || taskDescription)" class="text-center mb-8 max-w-lg">
+        <h2 v-if="taskTitle" class="font-display text-2xl font-semibold text-tertiary mb-3">{{taskTitle}}</h2>
+        <div v-if="taskCategory" class="inline-block px-3 py-1 mb-3 rounded-full text-sm font-medium text-on-primary" :class="mode === 'focus' ? 'bg-focus/10 border-focus/20 text-focus' : 'bg-rest/10 border-rest/20 text-rest'">
+          {{taskCategory}}
         </div>
-        <div class="flex justify-center gap-3 mb-8">
-          <button
-            @click="mode = 'focus'"
-            :class="mode === 'focus' ? 'bg-[#d4a373] text-[#1e293b]' : 'surface-container-high text-[var(--color-on-surface)] hover:text-[#d4a373] hover:surface-container-highest'"
-            class="px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ghost-border-subtle hover:ghost-border"
-          >
-            FOCUS
-          </button>
-          <button
-            @click="mode = 'rest'"
-            :class="mode === 'rest' ? 'bg-[#6abf69] text-[#1e293b]' : 'surface-container-high text-[var(--color-on-surface)] hover:text-[#6abf69] hover:surface-container-highest'"
-            class="px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ghost-border-subtle hover:ghost-border"
-          >
-            REST
-          </button>
+        <p v-if="taskDescription" class="font-body text-on-surface-variant text-lg leading-relaxed">{{taskDescription}}</p>
+      </div>
+      
+      <div class="text-[120px] md:text-[160px] font-bold leading-none mb-8" :class="mode === 'focus' ? 'text-focus-gradient' : 'text-rest-gradient'">{{timeString}}</div>
+      
+      <div class="flex gap-6 items-center">
+        <button
+          @click="buttonHandler"
+          class="w-20 h-20 rounded-full border border-primary/20 flex items-center justify-center group/btn hover:bg-primary transition-all duration-300"
+        >
+          <span class="material-symbols-outlined text-primary group-hover/btn:text-on-primary text-4xl" style="font-variation-settings: 'FILL' 1;">
+            {{ isRunning ? 'pause' : 'play_arrow' }}
+          </span>
+        </button>
+        <button @click="resetTimer" class="w-14 h-14 rounded-full border border-outline-variant/30 flex items-center justify-center hover:bg-surface-container-highest transition-colors">
+          <span class="material-symbols-outlined text-secondary text-2xl">refresh</span>
+        </button>
+      </div>
+      
+      <div class="mt-12 flex gap-3">
+        <button @click="setPreset(5)" :class="activePreset === 5 ? 'bg-primary border border-primary text-on-primary' : 'surface-container-high border border-outline-variant/10 text-on-surface-variant hover:text-primary'" class="px-4 py-1.5 rounded font-headline text-[10px] uppercase tracking-widest transition-colors">5m</button>
+        <button @click="setPreset(10)" :class="activePreset === 10 ? 'bg-primary border border-primary text-on-primary' : 'surface-container-high border border-outline-variant/10 text-on-surface-variant hover:text-primary'" class="px-4 py-1.5 rounded font-headline text-[10px] uppercase tracking-widest transition-colors">10m</button>
+        <button @click="setPreset(25)" :class="activePreset === 25 ? 'bg-primary border border-primary text-on-primary' : 'surface-container-high border border-outline-variant/10 text-on-surface-variant hover:text-primary'" class="px-4 py-1.5 rounded font-headline text-[10px] uppercase tracking-widest transition-colors">25m</button>
+        <button @click="toggleCustom" :class="showCustom ? 'bg-primary border border-primary text-on-primary' : 'surface-container-high border border-outline-variant/10 text-on-surface-variant hover:text-primary'" class="px-4 py-1.5 rounded font-headline text-[10px] uppercase tracking-widest transition-colors">Custom</button>
+      </div>
+      
+      <div v-if="showCustom" class="mt-8 mb-8 flex items-center justify-center gap-4">
+        <div class="relative">
+          <input type="number" min="0" max="60" v-model="minInput" placeholder="00" class="w-24 surface-container-lowest border-none rounded px-4 py-3 text-center text-xl text-on-surface font-body text-mono focus:ring-1 focus:ring-primary/40">
+          <span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium uppercase tracking-wide text-on-surface-variant">min</span>
         </div>
-        <div class="text-display text-[7rem] font-semibold mb-8 tracking-tight" :class="mode === 'focus' ? 'text-[#d4a373]' : 'text-[#6abf69]'">{{timeString}}</div>
-
-        <transition name="content-fade" mode="out-in">
-          <div v-if="!isRunning" key="setup" class="text-center">
-            <button
-              @click="buttonHandler"
-              :style="mode === 'focus'
-                ? 'background: linear-gradient(145deg, var(--color-primary) 0%, var(--color-primary-dim) 100%)'
-                : 'background: linear-gradient(145deg, var(--color-primary-dim) 0%, var(--color-primary) 100%)'"
-              class="px-8 py-3 text-[var(--color-on-primary)] font-medium rounded-[var(--radius-md)] transition-all duration-300 transform hover:scale-105 active:scale-95 mb-6 hover:shadow-lg"
-            >
-              {{buttonText}}
-            </button>
-            <div class="flex justify-center gap-3 mb-8">
-              <button @click="setPreset(5)" class="px-5 py-2 surface-container-high text-[var(--color-on-surface-variant)] text-sm font-medium rounded-[var(--radius-md)] hover:text-[var(--color-on-surface)] ghost-border-subtle hover:ghost-border transition-all duration-200">
-                5m
-              </button>
-              <button @click="setPreset(10)" class="px-5 py-2 surface-container-high text-[var(--color-on-surface-variant)] text-sm font-medium rounded-[var(--radius-md)] hover:text-[var(--color-on-surface)] ghost-border-subtle hover:ghost-border transition-all duration-200">
-                10m
-              </button>
-              <button @click="setPreset(25)" class="px-5 py-2 surface-container-high text-[var(--color-on-surface-variant)] text-sm font-medium rounded-[var(--radius-md)] hover:text-[var(--color-on-surface)] ghost-border-subtle hover:ghost-border transition-all duration-200">
-                25m
-              </button>
-              <button @click="toggleCustom" :class="showCustom ? 'surface-container-highest text-[var(--color-on-surface)]' : 'surface-container-high text-[var(--color-on-surface-variant)]'" class="px-5 py-2 text-[var(--color-on-surface-variant)] text-sm font-medium rounded-[var(--radius-md)] hover:text-[var(--color-on-surface)] ghost-border-subtle hover:ghost-border transition-all duration-200">
-                Custom
-              </button>
-            </div>
-            <div v-show="showCustom" class="mt-8 flex items-center justify-center gap-4">
-              <div class="relative">
-                <input type="number" min="0" max="60" v-model="minInput" placeholder="00" class="w-24 surface-container-lowest rounded-[var(--radius-sm)] px-4 py-3 text-center text-xl text-[var(--color-on-surface)] text-mono focus:outline-none transition-all duration-200 placeholder:text-[var(--color-on-surface-variant)] hover:surface-container-low">
-                <span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium uppercase tracking-wide text-[var(--color-on-surface-variant)]">min</span>
-              </div>
-              <span class="text-[var(--color-on-surface-variant)] text-2xl font-light">:</span>
-              <div class="relative">
-                <input type="number" min="0" max="60" v-model="secInput" placeholder="00" class="w-24 surface-container-lowest rounded-[var(--radius-sm)] px-4 py-3 text-center text-xl text-[var(--color-on-surface)] text-mono focus:outline-none transition-all duration-200 placeholder:text-[var(--color-on-surface-variant)] hover:surface-container-low">
-                <span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium uppercase tracking-wide text-[var(--color-on-surface-variant)]">sec</span>
-              </div>
-            </div>
-          </div>
-          <div v-else key="running" class="text-center">
-            <div v-if="taskTitle" class="mb-6">
-              <h2 class="text-display text-2xl font-semibold text-[var(--color-tertiary)] mb-3">{{taskTitle}}</h2>
-              <div v-if="taskCategory" class="inline-block px-3 py-1 mb-3 rounded-full text-sm font-medium surface-container-high" :class="mode === 'focus' ? 'text-[#1e293b] bg-[#d4a373]/15' : 'text-[#1e293b] bg-[#6abf69]/15'">
-                {{taskCategory}}
-              </div>
-              <p v-if="taskDescription" class="text-body text-[var(--color-on-surface-variant)] text-lg leading-relaxed">{{taskDescription}}</p>
-            </div>
-            <button
-              @click="buttonHandler"
-              :style="mode === 'focus'
-                ? 'background: linear-gradient(145deg, var(--color-primary) 0%, var(--color-primary-dim) 100%)'
-                : 'background: linear-gradient(145deg, var(--color-primary-dim) 0%, var(--color-primary) 100%)'"
-              class="px-8 py-3 text-[var(--color-on-primary)] font-medium rounded-[var(--radius-md)] transition-all duration-300 transform hover:scale-105 active:scale-95 hover:shadow-lg"
-            >
-              {{buttonText}}
-            </button>
-          </div>
-        </transition>
+        <span class="text-on-surface-variant text-2xl font-light">:</span>
+        <div class="relative">
+          <input type="number" min="0" max="60" v-model="secInput" placeholder="00" class="w-24 surface-container-lowest border-none rounded px-4 py-3 text-center text-xl text-on-surface font-body text-mono focus:ring-1 focus:ring-primary/40">
+          <span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium uppercase tracking-wide text-on-surface-variant">sec</span>
+        </div>
       </div>
     </div>
+    
+      <div class="absolute bottom-8 left-8 right-8 flex justify-between items-center">
+        <div class="flex gap-4">
+          <button 
+            @click="mode = 'focus'"
+            :class="mode === 'focus' ? 'text-focus' : 'text-on-surface-variant/40'"
+            class="text-[10px] font-headline uppercase tracking-widest flex items-center gap-2 transition-colors"
+          >
+            <span class="w-1.5 h-1.5 rounded-full" :class="mode === 'focus' ? 'bg-focus animate-pulse' : 'bg-on-surface-variant/40'"></span>
+            Focus Mode
+          </button>
+          <button 
+            @click="mode = 'rest'"
+            :class="mode === 'rest' ? 'text-rest' : 'text-on-surface-variant/40'"
+            class="text-[10px] font-headline uppercase tracking-widest flex items-center gap-2 transition-colors"
+          >
+            <span class="w-1.5 h-1.5 rounded-full" :class="mode === 'rest' ? 'bg-rest animate-pulse' : 'bg-on-surface-variant/40'"></span>
+            Rest Mode
+          </button>
+        </div>
+        <div class="text-[10px] font-headline uppercase tracking-widest text-on-surface-variant flex items-center gap-2">
+          <span v-if="longRestReady" class="px-2 py-0.5 rounded-sm bg-rest/10 border border-rest/20 text-rest text-[9px]">Long Rest Ready</span>
+          Segment {{ focusSessionCount }}/4
+        </div>
+      </div>
   </div>
 </template>
 
 <style scoped>
-.content-fade-enter-active,
-.content-fade-leave-active {
-  transition: all 0.3s ease-in-out;
+.text-focus-gradient {
+  font-family: 'Space Grotesk', monospace;
+  letter-spacing: -0.05em;
+  background: linear-gradient(to bottom, var(--color-focus) 0%, var(--color-tertiary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.content-fade-enter-from,
-.content-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
+.text-rest-gradient {
+  font-family: 'Space Grotesk', monospace;
+  letter-spacing: -0.05em;
+  background: linear-gradient(to bottom, var(--color-rest) 0%, var(--color-tertiary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 </style>
 
 <script setup lang="ts">
-  import { ref, onUnmounted, computed } from 'vue'
+  import { ref, onUnmounted, computed, watch } from 'vue'
   import PomodoroDB from '../utils/indexedDB'
   import type { Session } from '../types'
+  import chimeSound from '../assets/chime.m4a'
 
-  defineEmits(['sessionSaved'])
+  const emit = defineEmits(['sessionSaved'])
 
-  const minutes = ref(0)
+  const minutes = ref(25)
   const seconds = ref(0)
   const minInput = ref(0)
   const secInput = ref(0)
   const showCustom = ref(false)
+  const activePreset = ref(25)
   const taskTitle = ref('')
   const taskDescription = ref('')
   const taskCategory = ref('')
   const isRunning = ref(false)
   const mode = ref<'focus' | 'rest'>('focus')
   const sessionStartTime = ref(0)
-  const buttonText = ref('Start')
+  const focusSessionCount = ref(0)
+  const longRestReady = ref(false)
+  const streakCount = ref(parseInt(localStorage.getItem('streakCount') || '0', 10))
   let interv: any
+
+  const playChime = () => {
+    const audio = new Audio(chimeSound)
+    audio.play().catch(error => {
+      console.error('Failed to play chime:', error)
+    })
+  }
 
   defineExpose({
     taskTitle,
     taskDescription,
     taskCategory,
-    isRunning
+    isRunning,
+    streakCount
   })
 
   const timeString = computed(() => {
@@ -141,17 +149,19 @@
     if (seconds.value > 0) {
       seconds.value = seconds.value - 1
     } else {
-      stopTimer()
+      stopTimer(true)
     }
   }
 
   const buttonHandler = () => {
-    !interv ? startTimer() : stopTimer()
+    !interv ? startTimer() : pauseTimer()
   }
 
   const setPreset = (mins: number) => {
+    longRestReady.value = false
     minutes.value = mins
     seconds.value = 0
+    activePreset.value = mins
     showCustom.value = false
   }
 
@@ -162,20 +172,47 @@
   const startTimer = () => {
     if (interv) return
     if (showCustom.value) {
-      if (minInput.value) minutes.value = minInput.value
-      if (secInput.value) seconds.value = secInput.value
+      if (minInput.value !== undefined && minInput.value !== null) minutes.value = minInput.value
+      if (secInput.value !== undefined && secInput.value !== null) seconds.value = secInput.value
     }
     sessionStartTime.value = Date.now()
-    buttonText.value = 'Stop'
     isRunning.value = true
     interv = setInterval(() => {
       updateTime()
     }, 1000);
   }
 
-  const stopTimer = async () => {
+  const pauseTimer = () => {
     if (!interv) return
     clearInterval(interv)
+    interv = null
+  }
+
+  const resetTimerLogic = () => {
+    if (interv) {
+      clearInterval(interv)
+      interv = null
+    }
+    if (!longRestReady.value) {
+      minutes.value = 25
+      seconds.value = 0
+      activePreset.value = 25
+    }
+    isRunning.value = false
+  }
+
+  const resetTimer = () => {
+    longRestReady.value = false
+    resetTimerLogic()
+  }
+
+  const stopTimer = async (naturalFinish = false) => {
+    if (!interv) return
+    clearInterval(interv)
+    
+    if (naturalFinish) {
+      playChime()
+    }
     
     const endTime = Date.now()
     const duration = Math.floor((endTime - sessionStartTime.value) / 1000)
@@ -196,18 +233,31 @@
 
     await PomodoroDB.saveSession(session)
     
-    isRunning.value = false
-    resetTimer()
+    if (mode.value === 'focus') {
+      focusSessionCount.value++
+      streakCount.value++
+      localStorage.setItem('streakCount', streakCount.value.toString())
+      if (focusSessionCount.value >= 4) {
+        longRestReady.value = true
+        mode.value = 'rest'
+        minutes.value = 10
+        seconds.value = 0
+        activePreset.value = 10
+        showCustom.value = false
+      }
+    }
+    
+    resetTimerLogic()
+    emit('sessionSaved')
   }
 
-  const resetTimer = () => {
-    minutes.value = 0
-    seconds.value = 0
-    buttonText.value = 'Start'
-    interv = null
-  }
+  watch(mode, (newMode) => {
+    if (newMode === 'focus') {
+      longRestReady.value = false
+    }
+  })
 
   onUnmounted(() => {
-    stopTimer()
+    stopTimer(false)
   })
 </script>
