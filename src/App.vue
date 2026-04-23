@@ -30,9 +30,9 @@ const streakText = computed(() => {
       </div>
     </header>
 
-    <main class="flex-1 px-4 md:px-12 py-4 md:py-12 pt-20 overflow-y-auto w-full max-w-5xl mx-auto">
+    <main class="flex-1 px-4 md:px-12 py-4 md:py-12 pt-20 overflow-y-auto w-full">
       <div class="tech-trace"></div>
-      <div class="space-y-8 md:space-y-12 relative z-10">
+      <div class="space-y-8 md:space-y-12 relative z-10 max-w-5xl mx-auto">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 md:gap-6">
           <div class="staggered-header">
             <h1 class="font-display text-3xl md:text-5xl font-bold tracking-tighter text-tertiary">SESSION_CORE</h1>
@@ -44,14 +44,14 @@ const streakText = computed(() => {
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8">
-          <Timer ref="timerRef" @session-saved="statsRef?.refreshStats()" class="col-span-1" />
+          <Timer ref="timerRef" @session-saved="statsRef?.refreshStats()" :class="timerRef?.isRunning ? 'col-span-1' : 'col-span-1 lg:col-span-7'" />
           <SessionDetails 
             v-if="timerRef && !timerRef.isRunning"
             v-model:taskTitle="timerRef.taskTitle"
             v-model:taskDescription="timerRef.taskDescription"
             v-model:taskCategory="timerRef.taskCategory"
             v-model:isRunning="timerRef.isRunning"
-            class="col-span-1"
+            :class="timerRef?.isRunning ? '' : 'col-span-1 lg:col-span-5'"
           />
           <Stats ref="statsRef" class="col-span-1" />
         </div>
