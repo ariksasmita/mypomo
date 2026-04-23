@@ -25,18 +25,22 @@ const streakText = computed(() => {
         </div>
       </div>
       <div class="flex items-center gap-6">
+        <!--
         <button class="material-symbols-outlined text-primary/60 hover:text-tertiary transition-colors">account_circle</button>
         <button class="material-symbols-outlined text-primary/60 hover:text-tertiary transition-colors">settings</button>
+        -->
       </div>
     </header>
 
-    <main class="flex-1 px-4 md:px-12 py-4 md:py-12 pt-24 md:pt-32 overflow-y-auto w-full">
+    <main class="flex-1 px-4 md:px-12 py-4 md:py-12 pt-18 md:pt-24 overflow-y-auto w-full">
       <div class="tech-trace"></div>
       <div class="space-y-8 md:space-y-12 relative z-10 max-w-5xl mx-auto">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 md:gap-6">
           <div class="staggered-header">
             <h1 class="font-display text-3xl md:text-5xl font-bold tracking-tighter text-tertiary">SESSION_CORE</h1>
+            <!--
             <p class="font-body text-on-surface-variant mt-2 max-w-xs text-sm md:text-base">Restrained productivity interface designed for deep cognitive focus.</p>
+            -->
           </div>
           <div class="flex gap-2">
             <span class="px-3 py-1 rounded-full bg-secondary-container/50 border border-outline-variant/20 font-headline text-[10px] uppercase tracking-widest text-primary-dim">{{ streakText }}</span>
