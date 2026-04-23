@@ -44,16 +44,16 @@ const streakText = computed(() => {
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8">
-          <Timer ref="timerRef" @session-saved="statsRef?.refreshStats()" :class="timerRef?.isRunning ? 'col-span-1' : 'col-span-1 lg:col-span-7'" />
+          <Timer ref="timerRef" @session-saved="statsRef?.refreshStats()" :class="timerRef?.isRunning ? 'col-span-1 md:col-span-12' : 'col-span-1 md:col-span-7'" />
           <SessionDetails 
             v-if="timerRef && !timerRef.isRunning"
             v-model:taskTitle="timerRef.taskTitle"
             v-model:taskDescription="timerRef.taskDescription"
             v-model:taskCategory="timerRef.taskCategory"
             v-model:isRunning="timerRef.isRunning"
-            :class="timerRef?.isRunning ? '' : 'col-span-1 lg:col-span-5'"
+            class="col-span-1 md:col-span-5"
           />
-          <Stats ref="statsRef" class="col-span-1" />
+          <Stats ref="statsRef" class="col-span-1 md:col-span-12" />
         </div>
       </div>
     </main>
