@@ -30,7 +30,7 @@ const streakText = computed(() => {
       </div>
     </header>
 
-    <main class="flex-1 px-4 md:px-12 py-4 md:py-12 pt-20 overflow-y-auto w-full">
+    <main class="flex-1 px-4 md:px-12 py-4 md:py-12 pt-24 md:pt-32 overflow-y-auto w-full">
       <div class="tech-trace"></div>
       <div class="space-y-8 md:space-y-12 relative z-10 max-w-5xl mx-auto">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 md:gap-6">
