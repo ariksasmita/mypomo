@@ -17,15 +17,15 @@ const taskListRef = ref()
 const showSettings = ref(false)
 
 const streakText = computed(() => {
-  const count = timerRef.value?.streakCount?.value || 0
+  const count = timerRef.value?.streakCount || 0
   return `Streak: ${count}`
 })
 
 const startTask = async (task: Task) => {
   if (!timerRef.value) return
-  timerRef.value.taskTitle.value = task.title
-  timerRef.value.taskCategory.value = task.category
-  timerRef.value.taskDescription.value = ''
+  timerRef.value.taskTitle = task.title
+  timerRef.value.taskCategory = task.category
+  timerRef.value.taskDescription = ''
   timerRef.value.activeTaskId = task.id || null
   timerRef.value.startTimer()
   if (task.status === 'todo' && task.id) {
