@@ -53,6 +53,7 @@ export default defineConfig({
     })
   ],
   server: {
+    port: 5175,
     allowedHosts: ['.trycloudflare.com', 'made-stations-referrals-pipes.trycloudflare.com'],
     hmr: {
       overlay: true

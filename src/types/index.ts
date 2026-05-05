@@ -1,4 +1,5 @@
 export type SessionMode = 'focus' | 'rest'
+export type TaskStatus = 'todo' | 'in_progress' | 'done'
 
 export interface Session {
   id?: number
@@ -9,6 +10,7 @@ export interface Session {
   duration: number
   startTime: number
   endTime: number
+  taskId?: number
 }
 
 export interface CategoryStats {
@@ -23,6 +25,7 @@ export interface ExportData {
   exportDate: string
   categoryStats: CategoryStats[]
   sessions: Session[]
+  tasks?: Task[]
 }
 
 export interface Category {
@@ -49,4 +52,16 @@ export const DEFAULT_CONFIG: AppConfig = {
   ],
   defaultPreset: 25,
   categories: ['Main', 'Production', 'Creative Strategy', 'Admin / Ops', 'Deep Learning'],
+}
+
+export interface Task {
+  id?: number
+  title: string
+  category: string
+  status: TaskStatus
+  order: number
+  estimatedSessions: number
+  completedSessions: number
+  createdAt: number
+  completedAt?: number
 }

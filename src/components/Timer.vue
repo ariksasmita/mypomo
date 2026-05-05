@@ -123,6 +123,7 @@
   const streakCount = ref(parseInt(localStorage.getItem('streakCount') || '0', 10))
   const presets = ref<PresetConfig[]>(DEFAULT_CONFIG.presets)
   const defaultPreset = ref(DEFAULT_CONFIG.defaultPreset)
+  const activeTaskId = ref<number | null>(null)
   let interv: any
 
   onMounted(async () => {
@@ -147,15 +148,6 @@
       console.error('Failed to play chime:', error)
     })
   }
-
-  defineExpose({
-    taskTitle,
-    taskDescription,
-    taskCategory,
-    isRunning,
-    streakCount,
-    loadConfig
-  })
 
   const timeString = computed(() => {
     const min = minutes.value < 10 ? `0${minutes.value.toString()}` : minutes.value.toString()
@@ -252,10 +244,16 @@
       mode: mode.value,
       duration,
       startTime: sessionStartTime.value,
-      endTime
+      endTime,
+      taskId: activeTaskId.value || undefined
     }
 
     await PomodoroDB.saveSession(session)
+    
+    if (mode.value === 'focus' && activeTaskId.value) {
+      await PomodoroDB.incrementTaskSessions(activeTaskId.value)
+      activeTaskId.value = null
+    }
     
     if (mode.value === 'focus') {
       focusSessionCount.value++
@@ -283,5 +281,20 @@
 
   onUnmounted(() => {
     stopTimer(false)
+  })
+
+  defineExpose({
+    taskTitle,
+    taskDescription,
+    taskCategory,
+    isRunning,
+    streakCount,
+    loadConfig,
+    activeTaskId,
+    startTimer,
+    pauseTimer,
+    resetTimer,
+    buttonHandler,
+    mode
   })
 </script>

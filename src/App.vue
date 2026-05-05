@@ -2,12 +2,18 @@
 import { ref, computed } from 'vue'
 import Timer from './components/Timer.vue'
 import SessionDetails from './components/SessionDetails.vue'
+import TaskList from './components/TaskList.vue'
 import Stats from './components/Stats.vue'
 import SettingsModal from './components/SettingsModal.vue'
+import ShortcutsHelpModal from './components/ShortcutsHelpModal.vue'
+import PomodoroDB from './utils/indexedDB'
+import { useKeyboardShortcuts } from './composables/useKeyboardShortcuts'
+import type { Task } from './types'
 
 const timerRef = ref()
 const statsRef = ref()
 const sessionRef = ref()
+const taskListRef = ref()
 const showSettings = ref(false)
 
 const streakText = computed(() => {
@@ -15,10 +21,67 @@ const streakText = computed(() => {
   return `Streak: ${count}`
 })
 
+const startTask = async (task: Task) => {
+  if (!timerRef.value) return
+  timerRef.value.taskTitle.value = task.title
+  timerRef.value.taskCategory.value = task.category
+  timerRef.value.taskDescription.value = ''
+  timerRef.value.activeTaskId = task.id || null
+  timerRef.value.startTimer()
+  if (task.status === 'todo' && task.id) {
+    task.status = 'in_progress'
+    await PomodoroDB.updateTask(task)
+  }
+  if (taskListRef.value?.loadTasks) await taskListRef.value.loadTasks()
+}
+
 const reloadConfig = async () => {
   if (timerRef.value?.loadConfig) await timerRef.value.loadConfig()
   if (sessionRef.value?.loadConfig) await sessionRef.value.loadConfig()
+  if (taskListRef.value?.loadTasks) await taskListRef.value.loadTasks()
 }
+
+const onSessionSaved = async () => {
+  statsRef.value?.refreshStats()
+  if (taskListRef.value?.loadTasks) await taskListRef.value.loadTasks()
+}
+
+const { showHelp } = useKeyboardShortcuts({
+  toggleTimer() {
+    timerRef.value?.buttonHandler()
+  },
+  resetTimer() {
+    timerRef.value?.resetTimer()
+  },
+  focusMode() {
+    if (timerRef.value) timerRef.value.mode = 'focus'
+  },
+  restMode() {
+    if (timerRef.value) timerRef.value.mode = 'rest'
+  },
+  nextTask() {
+    taskListRef.value?.selectNext()
+  },
+  prevTask() {
+    taskListRef.value?.selectPrev()
+  },
+  startSelectedTask() {
+    const task = taskListRef.value?.getSelectedTask()
+    if (task) startTask(task)
+  },
+  addTask() {
+    taskListRef.value?.triggerAddTask()
+  },
+  toggleTaskDone() {
+    taskListRef.value?.toggleSelectedDone()
+  },
+  openSettings() {
+    showSettings.value = true
+  },
+  toggleHelp() {
+    showHelp.value = !showHelp.value
+  },
+})
 </script>
 
 <template>
@@ -53,7 +116,7 @@ const reloadConfig = async () => {
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8">
-          <Timer ref="timerRef" @session-saved="statsRef?.refreshStats()" :class="timerRef?.isRunning ? 'col-span-1 md:col-span-12' : 'col-span-1 md:col-span-7'" />
+          <Timer ref="timerRef" @session-saved="onSessionSaved" :class="timerRef?.isRunning ? 'col-span-1 md:col-span-12' : 'col-span-1 md:col-span-7'" />
           <SessionDetails 
             ref="sessionRef"
             v-if="timerRef && !timerRef.isRunning"
@@ -62,6 +125,14 @@ const reloadConfig = async () => {
             v-model:taskCategory="timerRef.taskCategory"
             v-model:isRunning="timerRef.isRunning"
             class="col-span-1 md:col-span-5"
+          />
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8">
+          <TaskList
+            ref="taskListRef"
+            class="col-span-1 md:col-span-12"
+            @start-task="startTask"
           />
           <Stats ref="statsRef" class="col-span-1 md:col-span-12" />
         </div>
@@ -73,5 +144,6 @@ const reloadConfig = async () => {
     </div>
 
     <SettingsModal :show="showSettings" @close="showSettings = false" @config-saved="reloadConfig" />
+    <ShortcutsHelpModal :show="showHelp" @close="showHelp = false" />
   </div>
 </template>

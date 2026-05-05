@@ -1,8 +1,8 @@
-import type { Session, CategoryStats, ExportData, Category, SessionMode, AppConfig } from '../types'
+import type { Session, CategoryStats, ExportData, Category, SessionMode, AppConfig, Task } from '../types'
 import { DEFAULT_CONFIG } from '../types'
 
 const DB_NAME = 'mypomo-db'
-const DB_VERSION = 2
+const DB_VERSION = 3
 
 class PomodoroDB {
   private static db: IDBDatabase | null = null
@@ -43,6 +43,13 @@ class PomodoroDB {
           db.createObjectStore('config', { keyPath: 'key' })
         }
 
+        if (!db.objectStoreNames.contains('tasks')) {
+          const taskStore = db.createObjectStore('tasks', { keyPath: 'id', autoIncrement: true })
+          taskStore.createIndex('status', 'status', { unique: false })
+          taskStore.createIndex('createdAt', 'createdAt', { unique: false })
+          taskStore.createIndex('order', 'order', { unique: false })
+        }
+
         if (oldVersion < 2) {
           const tx = (event.target as IDBOpenDBRequest).transaction!
           const configStore = tx.objectStore('config')
@@ -55,12 +62,12 @@ class PomodoroDB {
   static async saveSession(session: Session): Promise<number> {
     const db = await this.init()
     const validCategory = await this.getOrCreateCategory(session.category)
-    session.category = validCategory
+    const plain = JSON.parse(JSON.stringify({ ...session, category: validCategory }))
 
     return new Promise((resolve, reject) => {
       const tx = db.transaction('sessions', 'readwrite')
       const store = tx.objectStore('sessions')
-      const request = store.add(session)
+      const request = store.add(plain)
 
       request.onsuccess = () => {
         const sessionId = request.result as number
@@ -371,6 +378,148 @@ class PomodoroDB {
     })
   }
 
+  static async saveTask(task: Omit<Task, 'id'>): Promise<number> {
+    const db = await this.init()
+    const plain = JSON.parse(JSON.stringify(task))
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('tasks', 'readwrite')
+      const store = tx.objectStore('tasks')
+      const request = store.add(plain)
+
+      request.onsuccess = () => resolve(request.result as number)
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  static async updateTask(task: Task): Promise<void> {
+    const db = await this.init()
+    const plain = JSON.parse(JSON.stringify(task))
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('tasks', 'readwrite')
+      const store = tx.objectStore('tasks')
+      const request = store.put(plain)
+
+      request.onsuccess = () => resolve()
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  static async deleteTask(id: number): Promise<void> {
+    const db = await this.init()
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('tasks', 'readwrite')
+      const store = tx.objectStore('tasks')
+      const request = store.delete(id)
+
+      request.onsuccess = () => resolve()
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  static async getTask(id: number): Promise<Task | null> {
+    const db = await this.init()
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('tasks', 'readonly')
+      const store = tx.objectStore('tasks')
+      const request = store.get(id)
+
+      request.onsuccess = () => resolve(request.result || null)
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  static async getTasksByDate(date: Date): Promise<Task[]> {
+    const db = await this.init()
+    const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()
+    const endOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1).getTime()
+
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('tasks', 'readonly')
+      const index = tx.objectStore('tasks').index('createdAt')
+      const range = IDBKeyRange.bound(startOfDay, endOfDay)
+      const request = index.getAll(range)
+
+      request.onsuccess = () => {
+        const tasks = (request.result as Task[]).sort((a, b) => a.order - b.order)
+        resolve(tasks)
+      }
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  static async getActiveTasks(): Promise<Task[]> {
+    const db = await this.init()
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('tasks', 'readonly')
+      const store = tx.objectStore('tasks')
+      const request = store.getAll()
+
+      request.onsuccess = () => {
+        const tasks = (request.result as Task[])
+          .filter(t => t.status !== 'done')
+          .sort((a, b) => a.order - b.order)
+        resolve(tasks)
+      }
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  static async getTodayTasks(): Promise<Task[]> {
+    const today = new Date()
+    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()
+    const db = await this.init()
+
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('tasks', 'readonly')
+      const store = tx.objectStore('tasks')
+      const request = store.getAll()
+
+      request.onsuccess = () => {
+        const tasks = (request.result as Task[])
+          .filter(t => {
+            if (t.status === 'done') {
+              if (!t.completedAt) return false
+              return t.completedAt >= startOfDay
+            }
+            return t.createdAt >= startOfDay || t.completedSessions > 0
+          })
+          .sort((a, b) => a.order - b.order)
+        resolve(tasks)
+      }
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  static async getNextTaskOrder(): Promise<number> {
+    const db = await this.init()
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('tasks', 'readonly')
+      const store = tx.objectStore('tasks')
+      const request = store.getAll()
+
+      request.onsuccess = () => {
+        const tasks = request.result as Task[]
+        if (tasks.length === 0) {
+          resolve(0)
+          return
+        }
+        resolve(Math.max(...tasks.map(t => t.order)) + 1)
+      }
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  static async incrementTaskSessions(taskId: number): Promise<void> {
+    const task = await this.getTask(taskId)
+    if (!task) return
+    task.completedSessions++
+    if (task.completedSessions >= task.estimatedSessions && task.status !== 'done') {
+      task.status = 'done'
+      task.completedAt = Date.now()
+    }
+    await this.updateTask(task)
+  }
+
   static async resetDatabase(): Promise<void> {
     const db = await this.init()
     const storeNames = Array.from(db.objectStoreNames) as string[]
@@ -395,11 +544,13 @@ class PomodoroDB {
   static async exportToJSON(): Promise<Blob> {
     const sessions = await this.getAllSessions()
     const categoryStats = await this.getAllCategoryStats()
+    const tasks = await this.getTodayTasks()
 
     const exportData: ExportData = {
       exportDate: new Date().toISOString(),
       categoryStats,
-      sessions
+      sessions,
+      tasks
     }
 
     const jsonString = JSON.stringify(exportData, null, 2)
