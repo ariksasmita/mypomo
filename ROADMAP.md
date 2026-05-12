@@ -42,6 +42,34 @@ Future features and enhancements planned for MyPomo.
 - [x] Task schema: title, category, priority, status, estimatedSessions, completedSessions, createdAt, completedAt
 - [x] Query tasks by date and status
 
+### 6b. Task Editing
+- [ ] Inline edit mode for existing tasks in `TaskList.vue`
+  - [ ] Double-click or edit icon (`edit` pencil) to enter edit mode on a task
+  - [ ] Editable fields: **title**, **category**, **estimatedSessions**
+  - [ ] Non-editable: `completedSessions` (managed by timer), `status` (toggled via checkbox), `createdAt`, `id`
+  - [ ] Save on `Enter` key or click save button
+  - [ ] Cancel on `Escape` key or click cancel button
+  - [ ] Revert to view mode after save/cancel
+- [ ] Edit UI — replace task display row with inline form
+  - [ ] Title: text input (pre-filled)
+  - [ ] Category: text input with datalist (same as add form)
+  - [ ] Estimated sessions: number input (pre-filled, min 1)
+  - [ ] Action buttons: ✓ Save / ✗ Cancel
+- [ ] Save edited task via `PomodoroDB.updateTask(task)` (method already exists)
+- [ ] Keyboard shortcut: press `e` on selected task to enter edit mode (vim-style, integrates with existing j/k nav)
+- [ ] Reload task list after save (`loadTasks()`)
+- [ ] Edge cases:
+  - [ ] Empty title → reject, show error
+  - [ ] Reduce estimatedSessions below completedSessions → allow (just visual)
+  - [ ] Edit a completed task → allow (reopens for adjustment)
+
+**Files to change:**
+| File | Action |
+|------|--------|
+| `src/components/TaskList.vue` | Add inline edit mode UI + logic |
+| `src/composables/useKeyboardShortcuts.ts` | Add `e` shortcut for edit |
+| `src/utils/indexedDB.ts` | No changes needed (`updateTask` already exists) |
+
 ## 📝 Notes System
 
 ### 7. Markdown Note Editor
@@ -135,6 +163,47 @@ Future features and enhancements planned for MyPomo.
 - [ ] Export to PDF
 - [ ] Export summary reports
 
+### 19b. JSON Import
+- [ ] Validation utility for imported JSON files (`src/utils/validateImport.ts`)
+  - [ ] Validate top-level shape: `exportDate` (string), `sessions` (array), optional `tasks` (array)
+  - [ ] Validate each session has: `title`, `category`, `mode`, `duration`, `startTime`, `endTime`
+  - [ ] Validate each task (if present) has: `title`, `category`, `status`, `order`, `createdAt`
+  - [ ] Return `{ valid, data?, error? }` for clear error messages
+- [ ] `importFromJSON()` method on `PomodoroDB` (`src/utils/indexedDB.ts`)
+  - [ ] Accept `File` → read as text → parse → validate
+  - [ ] Import sessions via `saveSession()` (auto-handles category creation + stats rebuild)
+  - [ ] Import tasks via `saveTask()` (strip `id` for new auto-increment)
+  - [ ] Skip re-importing `categoryStats` — rebuilt automatically by `saveSession()`
+  - [ ] Return `ImportResult` with counts
+- [ ] Import UI in `Stats.vue`
+  - [ ] Upload button (`upload_file` icon) next to existing download button
+  - [ ] Hidden `<input type="file" accept=".json">` triggered by button click
+  - [ ] Inline feedback: success toast with counts / error toast with validation message
+  - [ ] Auto-clear message after 3 seconds
+  - [ ] Call `refreshStats()` after successful import
+- [ ] Add `ImportResult` type to `src/types/index.ts`
+  ```ts
+  export interface ImportResult {
+    sessionsImported: number
+    tasksImported: number
+    categoriesCreated: string[]
+  }
+  ```
+- [ ] Edge cases covered:
+  - [ ] Non-JSON file → "Invalid JSON format"
+  - [ ] Missing required fields → specific field name in error
+  - [ ] Empty file → "File is empty"
+  - [ ] Partial data (no tasks) → import sessions only
+  - [ ] Duplicate data → new IDs assigned, no duplicates
+
+**Files to change:**
+| File | Action |
+|------|--------|
+| `src/types/index.ts` | Add `ImportResult` type |
+| `src/utils/validateImport.ts` | **New file** — validation logic |
+| `src/utils/indexedDB.ts` | Add `importFromJSON()` static method |
+| `src/components/Stats.vue` | Add import button + feedback UI |
+
 ## 🎨 UI/UX Improvements
 
 ### 20. Theme System
@@ -186,6 +255,8 @@ Future features and enhancements planned for MyPomo.
    - ~~Configuration popups (1, 2, 3)~~ ✅ Done
    - ~~Task management (4, 5, 6)~~ ✅ Done
    - ~~Keyboard shortcuts (22)~~ ✅ Done (minus customizable shortcuts)
+   - JSON Import (19b) — import exported JSON back into the app
+   - Task Editing (6b) — inline edit for title, category, estimated sessions
 
 2. **Medium Term** (Next 3-6 months)
    - Basic notes page (7)

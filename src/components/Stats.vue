@@ -6,10 +6,15 @@
         <div class="flex-1 h-px bg-outline-variant/10"></div>
         <div class="flex gap-4">
           <button @click="refreshStats" class="material-symbols-outlined text-on-surface-variant/60 hover:text-on-surface text-sm" :class="{ 'animate-spin': isRefreshing }">refresh</button>
-          <button @click="exportData" class="material-symbols-outlined text-on-surface-variant/60 hover:text-on-surface text-sm">download</button>
+          <button @click="exportData" class="material-symbols-outlined text-on-surface-variant/60 hover:text-on-surface text-sm" title="Export JSON">download</button>
+          <button @click="triggerImport" :disabled="isImporting" class="material-symbols-outlined text-sm transition-colors" :class="isImporting ? 'text-on-surface-variant/30 cursor-wait' : 'text-on-surface-variant/60 hover:text-on-surface'" title="Import JSON">upload_file</button>
+          <input ref="fileInput" type="file" accept=".json" class="hidden" @change="handleImport" />
         </div>
       </div>
       
+      <div v-if="importMessage" class="px-3 py-2 rounded text-[10px] font-headline uppercase tracking-widest" :class="importStatus === 'success' ? 'bg-rest/10 text-rest border border-rest/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'">
+        {{ importStatus === 'success' ? '✓' : '✗' }} {{ importMessage }}
+      </div>
       <div class="grid grid-cols-12 gap-6">
         <div class="col-span-12 md:col-span-3 bg-surface-container-low p-6 rounded-lg border border-outline-variant/5">
           <div class="text-[10px] font-headline text-on-surface-variant uppercase tracking-widest mb-1">Total_Focus</div>
@@ -67,6 +72,10 @@ import type { CategoryStats, Session } from '../types'
 const categoryStats = ref<CategoryStats[]>([])
 const sessions = ref<Session[]>([])
 const isRefreshing = ref(false)
+const isImporting = ref(false)
+const importMessage = ref('')
+const importStatus = ref<'success' | 'error' | null>(null)
+const fileInput = ref<HTMLInputElement | null>(null)
 
 const formatTime = (seconds: number): string => {
   const h = Math.floor(seconds / 3600)
@@ -132,6 +141,39 @@ const exportData = async () => {
     URL.revokeObjectURL(url)
   } catch (error) {
     console.error('Failed to export data:', error)
+  }
+}
+
+const triggerImport = () => {
+  fileInput.value?.click()
+}
+
+const handleImport = async (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+
+  // Reset input so same file can be re-imported
+  input.value = ''
+
+  isImporting.value = true
+  importMessage.value = ''
+  importStatus.value = null
+
+  try {
+    const result = await PomodoroDB.importFromJSON(file)
+    importStatus.value = 'success'
+    importMessage.value = `Imported ${result.sessionsImported} sessions${result.tasksImported > 0 ? `, ${result.tasksImported} tasks` : ''}`
+    await refreshStats()
+  } catch (error) {
+    importStatus.value = 'error'
+    importMessage.value = error instanceof Error ? error.message : 'Import failed'
+  } finally {
+    isImporting.value = false
+    setTimeout(() => {
+      importMessage.value = ''
+      importStatus.value = null
+    }, 3000)
   }
 }
 

@@ -28,6 +28,18 @@ export interface ExportData {
   tasks?: Task[]
 }
 
+export interface ImportResult {
+  sessionsImported: number
+  tasksImported: number
+  categoriesCreated: string[]
+}
+
+export interface ImportValidation {
+  valid: boolean
+  data?: ExportData
+  error?: string
+}
+
 export interface Category {
   name: string
   createdAt: number

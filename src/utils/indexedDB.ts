@@ -1,4 +1,4 @@
-import type { Session, CategoryStats, ExportData, Category, SessionMode, AppConfig, Task } from '../types'
+import type { Session, CategoryStats, ExportData, ImportResult, ImportValidation, Category, SessionMode, AppConfig, Task } from '../types'
 import { DEFAULT_CONFIG } from '../types'
 
 const DB_NAME = 'mypomo-db'
@@ -555,6 +555,44 @@ class PomodoroDB {
 
     const jsonString = JSON.stringify(exportData, null, 2)
     return new Blob([jsonString], { type: 'application/json' })
+  }
+
+  static async importFromJSON(file: File): Promise<ImportResult> {
+    const text = await file.text()
+
+    if (!text.trim()) {
+      throw new Error('File is empty')
+    }
+
+    const { validateImport } = await import('./validateImport')
+    const validation: ImportValidation = validateImport(text)
+
+    if (!validation.valid || !validation.data) {
+      throw new Error(validation.error || 'Invalid import file')
+    }
+
+    const data = validation.data
+    const categoriesCreated: string[] = []
+    let sessionsImported = 0
+    let tasksImported = 0
+
+    // Import sessions — saveSession handles category creation + stats rebuild
+    for (const session of data.sessions) {
+      const { id, ...sessionData } = session
+      await this.saveSession(sessionData as Omit<Session, 'id'>)
+      sessionsImported++
+    }
+
+    // Import tasks (strip id for new auto-increment)
+    if (data.tasks && data.tasks.length > 0) {
+      for (const task of data.tasks) {
+        const { id, ...taskData } = task
+        await this.saveTask(taskData as Omit<Task, 'id'>)
+        tasksImported++
+      }
+    }
+
+    return { sessionsImported, tasksImported, categoriesCreated }
   }
 }
 
