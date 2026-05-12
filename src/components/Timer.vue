@@ -218,13 +218,22 @@
   }
 
   const resetTimer = () => {
+    // If timer was running, save the partial session before resetting
+    if (isRunning.value && sessionStartTime.value > 0) {
+      stopTimer(false)
+      return
+    }
     longRestReady.value = false
     resetTimerLogic()
   }
 
   const stopTimer = async (naturalFinish = false) => {
-    if (!interv) return
-    clearInterval(interv)
+    if (interv) {
+      clearInterval(interv)
+      interv = null
+    }
+
+    if (sessionStartTime.value === 0) return
     
     if (naturalFinish) {
       playChime()
