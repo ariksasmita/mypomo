@@ -75,6 +75,9 @@ const { showHelp } = useKeyboardShortcuts({
   toggleTaskDone() {
     taskListRef.value?.toggleSelectedDone()
   },
+  editSelectedTask() {
+    taskListRef.value?.editSelectedTask()
+  },
   openSettings() {
     showSettings.value = true
   },

@@ -71,57 +71,114 @@
           <span v-if="task.status === 'done'" class="material-symbols-outlined text-rest text-xs" style="font-variation-settings: 'FILL' 1;">check</span>
         </button>
 
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2">
-            <span class="font-body text-sm text-on-surface truncate" :class="{ 'line-through text-on-surface-variant/50': task.status === 'done' }">{{ task.title }}</span>
-          </div>
-          <div class="flex items-center gap-3 mt-0.5">
-            <span v-if="task.category" class="text-[10px] font-headline uppercase tracking-wider text-on-surface-variant/60">{{ task.category }}</span>
-            <div class="flex items-center gap-1">
-              <div
-                v-for="i in task.estimatedSessions"
-                :key="i"
-                class="w-1.5 h-1.5 rounded-full"
-                :class="i <= task.completedSessions ? 'bg-focus' : 'bg-outline-variant/20'"
-              ></div>
-              <span class="text-[10px] text-on-surface-variant/40">{{ task.completedSessions }}/{{ task.estimatedSessions }}</span>
+
+
+        <!-- View mode -->
+        <template v-if="editingTaskId !== task.id">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="font-body text-sm text-on-surface truncate" :class="{ 'line-through text-on-surface-variant/50': task.status === 'done' }">{{ task.title }}</span>
+            </div>
+            <div class="flex items-center gap-3 mt-0.5">
+              <span v-if="task.category" class="text-[10px] font-headline uppercase tracking-wider text-on-surface-variant/60">{{ task.category }}</span>
+              <div class="flex items-center gap-1">
+                <div
+                  v-for="i in task.estimatedSessions"
+                  :key="i"
+                  class="w-1.5 h-1.5 rounded-full"
+                  :class="i <= task.completedSessions ? 'bg-focus' : 'bg-outline-variant/20'"
+                ></div>
+                <span class="text-[10px] text-on-surface-variant/40">{{ task.completedSessions }}/{{ task.estimatedSessions }}</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="flex items-center gap-1">
-          <button
-            v-if="task.status !== 'done'"
-            @click="handleStartTask(task)"
-            class="p-1.5 rounded hover:bg-focus/10 text-on-surface-variant hover:text-focus transition-colors"
-            title="Set as active"
-          >
-            <span class="material-symbols-outlined text-lg">play_arrow</span>
-          </button>
-          <button
-            v-if="tasks.indexOf(task) > 0"
-            @click="moveTask(task, -1)"
-            class="p-1.5 rounded hover:bg-surface-container-highest text-on-surface-variant/40 hover:text-on-surface-variant transition-colors"
-            title="Move up"
-          >
-            <span class="material-symbols-outlined text-sm">arrow_upward</span>
-          </button>
-          <button
-            v-if="tasks.indexOf(task) < tasks.length - 1"
-            @click="moveTask(task, 1)"
-            class="p-1.5 rounded hover:bg-surface-container-highest text-on-surface-variant/40 hover:text-on-surface-variant transition-colors"
-            title="Move down"
-          >
-            <span class="material-symbols-outlined text-sm">arrow_downward</span>
-          </button>
-          <button
-            @click="removeTask(task.id!)"
-            class="p-1.5 rounded hover:bg-red-500/10 text-on-surface-variant/40 hover:text-red-400 transition-colors"
-            title="Delete"
-          >
-            <span class="material-symbols-outlined text-sm">close</span>
-          </button>
-        </div>
+          <div class="flex items-center gap-1">
+            <button
+              @click="startEditing(task)"
+              class="p-1.5 rounded hover:bg-primary/10 text-on-surface-variant/40 hover:text-primary transition-colors"
+              title="Edit task"
+            >
+              <span class="material-symbols-outlined text-sm">edit</span>
+            </button>
+            <button
+              v-if="task.status !== 'done'"
+              @click="handleStartTask(task)"
+              class="p-1.5 rounded hover:bg-focus/10 text-on-surface-variant hover:text-focus transition-colors"
+              title="Set as active"
+            >
+              <span class="material-symbols-outlined text-lg">play_arrow</span>
+            </button>
+            <button
+              v-if="tasks.indexOf(task) > 0"
+              @click="moveTask(task, -1)"
+              class="p-1.5 rounded hover:bg-surface-container-highest text-on-surface-variant/40 hover:text-on-surface-variant transition-colors"
+              title="Move up"
+            >
+              <span class="material-symbols-outlined text-sm">arrow_upward</span>
+            </button>
+            <button
+              v-if="tasks.indexOf(task) < tasks.length - 1"
+              @click="moveTask(task, 1)"
+              class="p-1.5 rounded hover:bg-surface-container-highest text-on-surface-variant/40 hover:text-on-surface-variant transition-colors"
+              title="Move down"
+            >
+              <span class="material-symbols-outlined text-sm">arrow_downward</span>
+            </button>
+            <button
+              @click="removeTask(task.id!)"
+              class="p-1.5 rounded hover:bg-red-500/10 text-on-surface-variant/40 hover:text-red-400 transition-colors"
+              title="Delete"
+            >
+              <span class="material-symbols-outlined text-sm">close</span>
+            </button>
+          </div>
+        </template>
+
+        <!-- Edit mode -->
+        <template v-else>
+          <div class="flex-1 min-w-0 space-y-2">
+            <input
+              ref="editTitleInput"
+              v-model="editTitle"
+              type="text"
+              placeholder="Task title"
+              class="w-full bg-surface-container-lowest border-none rounded px-3 py-1.5 text-on-surface placeholder:text-on-surface-variant/30 focus:ring-1 focus:ring-primary/40 font-body text-sm"
+              @keyup.enter="saveEditing(task)"
+              @keyup.escape="cancelEditing"
+            />
+            <div class="flex flex-wrap gap-3 items-center">
+              <input
+                v-model="editCategory"
+                type="text"
+                list="edit-category-options"
+                placeholder="Category"
+                class="flex-1 min-w-[120px] bg-surface-container-lowest border-none rounded px-3 py-1.5 text-on-surface placeholder:text-on-surface-variant/30 focus:ring-1 focus:ring-primary/40 font-body text-sm"
+                @keyup.enter="saveEditing(task)"
+                @keyup.escape="cancelEditing"
+              />
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-headline uppercase tracking-wider text-on-surface-variant">Sessions</span>
+                <input
+                  v-model.number="editEstimated"
+                  type="number"
+                  min="1"
+                  max="20"
+                  class="w-14 bg-surface-container-lowest border-none rounded px-2 py-1.5 text-center text-on-surface text-sm focus:ring-1 focus:ring-primary/40"
+                  @keyup.enter="saveEditing(task)"
+                  @keyup.escape="cancelEditing"
+                />
+              </div>
+              <div class="flex gap-2">
+                <button @click="saveEditing(task)" class="px-3 py-1.5 rounded font-headline text-[10px] uppercase tracking-widest bg-primary text-on-primary hover:opacity-90 transition-opacity">Save</button>
+                <button @click="cancelEditing" class="px-3 py-1.5 rounded font-headline text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors">Cancel</button>
+              </div>
+            </div>
+            <datalist id="edit-category-options">
+              <option v-for="cat in categories" :key="cat" :value="cat" />
+            </datalist>
+          </div>
+        </template>
       </div>
     </div>
 
@@ -147,6 +204,13 @@ const showAddForm = ref(false)
 const newTitle = ref('')
 const newCategory = ref('')
 const newEstimated = ref(1)
+
+// Edit state
+const editingTaskId = ref<number | null>(null)
+const editTitle = ref('')
+const editCategory = ref('')
+const editEstimated = ref(1)
+const editTitleInput = ref<HTMLInputElement | null>(null)
 
 const doneCount = computed(() => tasks.value.filter(t => t.status === 'done').length)
 
@@ -273,5 +337,38 @@ const moveTask = async (task: Task, direction: number) => {
   await loadTasks()
 }
 
-defineExpose({ loadTasks, loadConfig, selectNext, selectPrev, getSelectedTask, toggleSelectedDone, triggerAddTask })
+const startEditing = (task: Task) => {
+  editingTaskId.value = task.id ?? null
+  editTitle.value = task.title
+  editCategory.value = task.category
+  editEstimated.value = task.estimatedSessions
+  nextTick(() => {
+    editTitleInput.value?.focus()
+  })
+}
+
+const saveEditing = async (task: Task) => {
+  const title = editTitle.value.trim()
+  if (!title) return
+
+  task.title = title
+  task.category = editCategory.value.trim() || 'Main'
+  task.estimatedSessions = editEstimated.value || 1
+
+  await PomodoroDB.updateTask(task)
+  editingTaskId.value = null
+  await loadTasks()
+}
+
+const cancelEditing = () => {
+  editingTaskId.value = null
+}
+
+const editSelectedTask = () => {
+  const task = getSelectedTask()
+  if (!task) return
+  startEditing(task)
+}
+
+defineExpose({ loadTasks, loadConfig, selectNext, selectPrev, getSelectedTask, toggleSelectedDone, triggerAddTask, editSelectedTask })
 </script>

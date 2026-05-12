@@ -10,6 +10,7 @@ export interface ShortcutActions {
   startSelectedTask: () => void
   addTask: () => void
   toggleTaskDone: () => void
+  editSelectedTask: () => void
   openSettings: () => void
   toggleHelp: () => void
 }
@@ -30,6 +31,7 @@ export const SHORTCUTS: ShortcutDef[] = [
   { key: 'Enter', label: 'Start selected task', category: 'Tasks' },
   { key: 'A', label: 'Add new task', category: 'Tasks' },
   { key: 'X', label: 'Toggle task done', category: 'Tasks' },
+  { key: 'E', label: 'Edit selected task', category: 'Tasks' },
   { key: 'S', label: 'Open settings', category: 'App' },
   { key: '?', label: 'Show shortcuts', category: 'App' },
   { key: 'Esc', label: 'Close modal / deselect', category: 'App' },
@@ -83,6 +85,9 @@ export function useKeyboardShortcuts(actions: ShortcutActions) {
         break
       case 'x':
         actions.toggleTaskDone()
+        break
+      case 'e':
+        actions.editSelectedTask()
         break
       case 's':
         actions.openSettings()
