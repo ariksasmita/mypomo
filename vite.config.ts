@@ -12,8 +12,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico'],
       manifest: {
-        name: 'CHRONO_SESSION',
-        short_name: 'chronosession',
+        name: 'Chrono Core',
+        short_name: 'Chrono Core',
         description: 'A beautiful Pomodoro timer with statistics',
         theme_color: '#0c0e10',
         background_color: '#0c0e10',
